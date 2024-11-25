@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car States Visualization</title>
+</head>
+<body>
+    <h1>Car States Visualization</h1>
+    <h2>State Frequency</h2>
+    <img src="data:image/png;base64,{{ freq_img_data }}" alt="State Frequency Graph">
+    
+    <h2>State Changes Over Time</h2>
+    <img src="data:image/png;base64,{{ time_img_data }}" alt="State Changes Over Time">
+
+    <h2>State History</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>State</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for timestamp, state in car_data %}
+            <tr>
+                <td>{{ timestamp }}</td>
+                <td>{{ state }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('index') }}">Back to Control</a>
+</body>
+</html>

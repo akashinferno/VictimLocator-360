@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Control</title>
+</head>
+<body>
+    <h1>Welcome {{ session['username'] }}</h1>
+    <form action="{{ url_for('change_state') }}" method="POST">
+        <label for="state">Select Car State:</label>
+        <select id="state" name="state">
+            <option value="on">On</option>
+            <option value="off">Off</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="front">Front</option>
+            <option value="back">Back</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+    <a href="{{ url_for('visualize') }}">Visualize Graph</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
