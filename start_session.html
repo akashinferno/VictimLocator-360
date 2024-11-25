@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Control - Car Layout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            width: 90%;
+            height: 80vh;
+        }
+
+        .control-box {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin: 10px 0;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-cw { background-color: #008CBA; color: white; }
+        .btn-ccw { background-color: #ff9800; color: white; }
+        .btn-on { background-color: #4CAF50; color: white; font-size: 18px; } /* Green Button */
+        .btn-off { background-color: #f44336; color: white; font-size: 18px; } /* Red Button */
+
+        .main-control {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-control">
+        <button class="btn-on" onclick="controlAllMotors('on')">Turn All ON</button>
+        <button class="btn-off" onclick="controlAllMotors('off')">Turn All OFF</button>
+    </div>
+
+    <div class="container">
+        <!-- Motor 1 -->
+        <div class="control-box">
+            <h3>Wheel 1</h3>
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="toggleMotor(1, this.checked)">
+                <span class="slider"></span>
+            </label>
+            <button class="btn-cw" onclick="controlMotor(1, 'clockwise')">Clockwise</button>
+            <button class="btn-ccw" onclick="controlMotor(1, 'counterclockwise')">Counterclockwise</button>
+        </div>
+
+        <!-- Motor 2 -->
+        <div class="control-box">
+            <h3>Wheel 2</h3>
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="toggleMotor(2, this.checked)">
+                <span class="slider"></span>
+            </label>
+            <button class="btn-cw" onclick="controlMotor(2, 'clockwise')">Clockwise</button>
+            <button class="btn-ccw" onclick="controlMotor(2, 'counterclockwise')">Counterclockwise</button>
+        </div>
+
+        <!-- Motor 3 -->
+        <div class="control-box">
+            <h3>Wheel 3</h3>
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="toggleMotor(3, this.checked)">
+                <span class="slider"></span>
+            </label>
+            <button class="btn-cw" onclick="controlMotor(3, 'clockwise')">Clockwise</button>
+            <button class="btn-ccw" onclick="controlMotor(3, 'counterclockwise')">Counterclockwise</button>
+        </div>
+
+        <!-- Motor 4 -->
+        <div class="control-box">
+            <h3>Wheel 4</h3>
+            <label class="toggle-switch">
+                <input type="checkbox" onchange="toggleMotor(4, this.checked)">
+                <span class="slider"></span>
+            </label>
+            <button class="btn-cw" onclick="controlMotor(4, 'clockwise')">Clockwise</button>
+            <button class="btn-ccw" onclick="controlMotor(4, 'counterclockwise')">Counterclockwise</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+
+        // ---------------------------------------------------------------------------------------------
+        // Connect to WebSocket server
+        const socket = io.connect('http://localhost:5000');  // Adjust the URL if necessary
+
+        // Emit motor toggle event to the server
+        function toggleMotor(motor, isChecked) {
+            const action = isChecked ? 'on' : 'off';
+            console.log(`Motor ${motor} toggled: ${action}`);
+            socket.emit('toggle_motor', { motor: motor, action: action });
+        }
+
+        // Emit rotation control event to the server
+        function controlMotor(motor, direction) {
+            console.log(`Motor ${motor} action: ${direction}`);
+            socket.emit('rotate_motor', { motor: motor, direction: direction });
+        }
+
+        // Emit to turn all motors on or off
+        function controlAllMotors(action) {
+            console.log(`All motors action: ${action}`);
+            socket.emit('toggle_all_motors', { action: action });
+        }
+
+        // Listen for updates from the server (optional, can be used for feedback)
+        socket.on('motor_status', (data) => {
+            console.log(`Motor ${data.motor} is now ${data.status}`);
+        });
+
+        socket.on('rotate_status', (data) => {
+            console.log(`Motor ${data.motor} is rotating ${data.direction}`);
+        });
+
+        socket.on('all_motors_status', (data) => {
+            console.log(`All motors are now ${data.state ? 'ON' : 'OFF'}`);
+        });
+    </script>
+</body>
+</html>
