@@ -26,6 +26,18 @@ viewers = set()  # Store usernames of viewers
 global_username=None
 
 
+
+#controls going to esp32:
+esp32_controller=['neutral','forward','reverse','left','right','diagonal']
+esp32_ci=0
+
+esp32_power=['off','on']
+esp32_pi=0
+
+esp32_mode=['4-wheel','2-wheel']
+esp32_mi=0
+
+
 # Initialize the database
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
@@ -56,9 +68,10 @@ init_db()
 
 @app.route('/')
 def index():
+    global esp32_power,esp32_pi
     if 'username' not in session:
         return redirect(url_for('login'))
-    return render_template('index.html', controller=active_controller, username=session['username'])
+    return render_template('index.html', controller=active_controller, username=session['username'],car_state=esp32_power[esp32_pi])
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -81,6 +94,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     global active_controller, viewers,global_username
+    error=None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -96,11 +110,15 @@ def login():
                     active_controller = username
                 else:
                     viewers.add(username)
+                
                 return redirect(url_for('index'))
+            
             else:
                 flash('Invalid username or password', 'error')
+                error='Invalid username or password'
+            
                 
-    return render_template('login.html')
+    return render_template('login.html',error=error)
 
 
 @app.route('/logout')
@@ -207,7 +225,7 @@ def visualize():
     
     return render_template(
         'visualize.html',
-        car_data=zip(states, timestamps, usernames),
+        car_data=zip(timestamps,states, usernames),
         freq_img_data=freq_img_data,
         time_img_data=time_img_data )
     
@@ -245,6 +263,13 @@ def generate_line_chart(x_data, y_data, title, xlabel, ylabel):
     img_data = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return img_data
+
+#----------------------------------
+@app.route('/esp32', methods=['GET'])
+def esp32():
+    global esp32_ci,esp32_mi,esp32_pi,esp32_controller,esp32_mode
+    return {"power": esp32_power[esp32_pi],"mode":esp32_mode[esp32_mi],"controller": esp32_controller[esp32_ci] }, 200
+
     
 
 '''
@@ -263,7 +288,7 @@ def handle_control_action(data):
 
     '''
 
-
+#----------------------------------------------------------------
 esp32_url="http://127.0.0.1:5000/esp32"
 # WebSocket Handlers
 @socketio.on('connect')
@@ -271,33 +296,30 @@ def handle_connect():
     print("Client connected")
     emit('server_message', {'message': 'Welcome to the WebSocket server!'})
 
+#--------------------------------------------------------------
 @socketio.on('disconnect')
 def handle_disconnect():
     print("Client disconnected")
-
+#----------------------------------------------------------------
 # Handle power control (on/off)
 @socketio.on('control_power')
 def handle_control_power(data):
-    global  esp32_pi,global_username
+    global  esp32_pi,global_username,esp32_power
     power_state = data.get('state')
     print(f"Power turned {power_state}")
     emit('power_status', {'state': power_state})
     if power_state=='on':
-        esp32_pi=0
-    if power_state=='off':
         esp32_pi=1
+    if power_state=='off':
+        esp32_pi=0
     # Update global variable based on power state
-    if power_state == 'on':
-        esp32_pi = 0
-    elif power_state == 'off':
-        esp32_pi = 1
+
 
     try:
         with sqlite3.connect(DB_NAME) as conn:
             cursor = conn.cursor()
-            
-            # Sample power state and user
-            power_state = 'on'  # or 'off'
+            power_state= esp32_power[esp32_pi]
+
             user_id = global_username
             
             # Get the current timestamp
@@ -318,11 +340,11 @@ def handle_control_power(data):
 
         
 
-# Handle direction control (forward, backward, left, right)
+# ----------------------------------------------
 
 @socketio.on('control_direction')
 def handle_control_direction(data):
-    global  esp32_ci
+    global  esp32_ci,esp32_controller,global_username
     direction = data.get('direction')
     print(f"Moving: {direction}")
     emit('direction_status', {'direction': direction})
@@ -336,11 +358,39 @@ def handle_control_direction(data):
         esp32_ci=2
     elif direction=='diagonal':
         esp32_ci=5
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+            control_state= esp32_controller[esp32_ci]
 
+            user_id = global_username
+            
+            # Get the current timestamp
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')  # Format timestamp as 'YYYY-MM-DD HH:MM:SS'
+
+            # Insert the power state, timestamp, and user_id into the car_state table
+            cursor.execute('''
+                INSERT INTO car_state (state, timestamp, user_id)
+                VALUES (?, ?, ?)
+            ''', (control_state, timestamp, user_id))
+
+            # Commit the transaction
+            conn.commit()
+
+            print(f"Inserted car state -'{control_state}' with timestamp '{timestamp}' for user {user_id} into database.")
+    except sqlite3.Error as e:
+        print(f"Error inserting into database: {e}")
+    
+
+
+
+
+
+#--------------------------------------------------
 # Handle mode control (two-wheel, four-wheel)
 @socketio.on('control_mode')
 def handle_control_mode(data):
-    global esp32_mi
+    global esp32_mi,esp32_mode,global_username
     mode = data.get('mode')
     print(f"Mode selected: {mode}")
     emit('mode_status', {'mode': mode})
@@ -348,6 +398,28 @@ def handle_control_mode(data):
         esp32_mi=0
     if mode=='2wheel':
         esp32_mi=1
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+            mode_state= esp32_mode[esp32_mi]
+
+            user_id = global_username
+            
+            # Get the current timestamp
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')  # Format timestamp as 'YYYY-MM-DD HH:MM:SS'
+
+            # Insert the power state, timestamp, and user_id into the car_state table
+            cursor.execute('''
+                INSERT INTO car_state (state, timestamp, user_id)
+                VALUES (?, ?, ?)
+            ''', (mode_state, timestamp, user_id))
+
+            # Commit the transaction
+            conn.commit()
+
+            print(f"Inserted car state -'{mode_state}' with timestamp '{timestamp}' for user {user_id} into database.")
+    except sqlite3.Error as e:
+        print(f"Error inserting into database: {e}")
 
 
 if __name__ == '__main__':
