@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car State Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #2c3e50;
+            color: #fff;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background-color: rgba(30, 60, 114, 0.8);
+            color: rgba(255, 255, 255, 0.8);
+            width: 100%;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+        }
+
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Car State Visualization</h1>
+
+        <!-- Display State Frequency Graph -->
+        <h2>State Frequency</h2>
+        <img id="freq-graph" src="data:image/png;base64,{{ freq_img_data }}" alt="State Frequency Graph">
+
+        <!-- Display State Changes Over Time Graph -->
+        <h2>State Changes Over Time</h2>
+        <img id="time-graph" src="data:image/png;base64,{{ time_img_data }}" alt="State Changes Over Time">
+
+        <!-- Display Car State History Table -->
+        <h2>State History</h2>
+        <table id="car-state-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>State</th>
+                    <th>User ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for  timestamps,state, user_id in car_data %}
+                <tr>
+                    
+                    <td>{{ timestamps}}</td>
+                    <td>{{ state }}</td>
+                    <td>{{ user_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Link to return to the control page -->
+        <a href="{{ url_for('index') }}" class="back-link">Back to Control</a>
+    </div>
+
+    <footer>
+        &copy; 2024 Victim Locator 360 | <a href="#">Privacy Policy</a>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:5000'); // Adjust as necessary
+
+        // Listen for new control actions and dynamically update the table
+        socket.on('new_control_action', (data) => {
+            console.log('New action received:', data);
+
+            const { action, timestamp, user_id } = data;
+
+            // Dynamically add a new row to the table
+            const table = document.querySelector('table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `<td>${timestamp}</td><td>${action}</td><td>${user_id}</td>`;
+            table.appendChild(newRow);
+        });
+
+        // Listen for graph updates and dynamically update images and table
+        socket.on('update_graphs', (data) => {
+            const { freq_img_data, time_img_data, car_data } = data;
+
+            // Update the graphs
+            document.getElementById('freq-graph').src = 'data:image/png;base64,' + freq_img_data;
+            document.getElementById('time-graph').src = 'data:image/png;base64,' + time_img_data;
+
+            // Update the car state history table
+            const table = document.getElementById('car-state-table').getElementsByTagName('tbody')[0];
+            table.innerHTML = '';  // Clear existing rows
+
+            car_data.forEach(row => {
+                const newRow = table.insertRow();
+                newRow.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td>`;
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Control - Car Layout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Live Cam Section */
+        .live-cam {
+            width: 50%;
+            height: 59vh; /* Occupies 1/4th of the screen */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .live-cam h1 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .live-cam img {
+            width: 61%;
+            height: 53%; /* Adjust height to fit the section */
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+
+        /*live location*/
+        /* Live Location Section */
+        .live-location {
+            position: absolute;
+            top: 0;
+            right: 20px;
+            padding: 10px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5); /* Optional: adds a slight background for visibility */
+            color: white;
+            width: 44%;  /* Adjust the width to fit 1/4th of the screen */
+            z-index: 10; /* Makes sure it stays on top of other content */
+        }
+
+        .live-location img {
+            width: 65%;  /* Ensures the image fills the container */
+            height: 100%; /* Make image take the full height of the container */
+            object-fit: cover; /* Ensures the image covers the space without distortion */
+        }
+
+
+        /* Buttons and Controls */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .power-buttons, .mode-buttons, .direction-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 20px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-on {
+            background-color: #28A745;
+            color: white;
+        }
+
+        .btn-off {
+            background-color: #DC3545;
+            color: white;
+        }
+
+        .btn-forward, .btn-backward, .btn-right, .btn-left {
+            background-color: #6C757D;
+            color: white;
+        }
+
+        .btn-2wheel, .btn-4wheel {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .direction-buttons-left {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 20px;
+            flex-direction: column;
+        }
+
+        .direction-buttons-right {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+            flex-direction: row;
+        }
+
+        .mode-buttons {
+            position: absolute;
+            bottom: 100px;
+            display: flex;
+            gap: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .power-buttons {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Live Cam Section -->
+    <div class="live-cam">
+        <h1>Live Cam</h1>
+        <img src="/static/iStockMac99-186876633-696x392.jpg" alt="Live Camera Feed">
+    </div>
+    <!-- Live Location -->
+    <div class="live-location">
+        <h1>Live Location</h1>
+        <img src="/static/location-map.jpg" alt="Live Camera Feed">
+    </div>
+
+    <!-- Mode Control Buttons -->
+    <div class="mode-buttons">
+        <button class="btn-2wheel" onclick="controlMode('2wheel')">Two-Wheel Mode</button>
+        <button class="btn-4wheel" onclick="controlMode('4wheel')">Four-Wheel Mode</button>
+    </div>
+
+    <!-- Power Control Buttons -->
+    <div class="power-buttons">
+        <button class="btn-on" onclick="controlPower('on')">Turn On</button>
+        <button class="btn-off" onclick="controlPower('off')">Turn Off</button>
+    </div>
+
+    <!-- Direction Control Buttons -->
+    <div class="direction-buttons-left">
+        <button class="btn-forward" onclick="controlDirection('forward')">Forward</button>
+        <button class="btn-backward" onclick="controlDirection('backward')">Backward</button>
+    </div>
+
+    <div class="direction-buttons-right">
+        <button class="btn-left" onclick="controlDirection('left')">Left</button>
+        <button class="btn-right" onclick="controlDirection('right')">Right</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:5000');
+
+        function controlPower(state) {
+            console.log(`Power: ${state}`);
+            socket.emit('control_power', { state: state });
+        }
+
+        function controlDirection(direction) {
+            console.log(`Moving: ${direction}`);
+            socket.emit('control_direction', { direction: direction });
+        }
+
+        function controlMode(mode) {
+            console.log(`Mode selected: ${mode}`);
+            socket.emit('control_mode', { mode: mode });
+        }
+    </script>
+</body>
+</html>
