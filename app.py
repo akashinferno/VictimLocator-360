@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session,flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash  # Import flash
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import sqlite3
@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from collections import Counter
-import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -23,7 +22,6 @@ DB_NAME = 'car_control.db'
 # Global variables
 active_controller = None  # Store the username of the active controller
 viewers = set()  # Store usernames of viewers
-global_username=None
 
 
 # Initialize the database
@@ -66,7 +64,6 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
         with sqlite3.connect(DB_NAME) as conn:
             cursor = conn.cursor()
             try:
@@ -80,7 +77,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    global active_controller, viewers,global_username
+    global active_controller, viewers
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -91,15 +88,13 @@ def login():
             if user:
                 session['username'] = username
                 session['user_id'] = user[0]  # Store user_id in session
-                global_username = username
                 if not active_controller:
                     active_controller = username
                 else:
                     viewers.add(username)
                 return redirect(url_for('index'))
             else:
-                flash('Invalid username or password', 'error')
-                
+                flash("Invalid username or password. Please try again.")  # Add this line to flash the message
     return render_template('login.html')
 
 
@@ -183,34 +178,27 @@ def visualize():
 
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT car_state.state, car_state.timestamp, car_state.user_id
-            FROM car_state
-            ORDER BY car_state.timestamp DESC
-            
-        ''')
+        cursor.execute('''SELECT car_state.state, car_state.timestamp, users.username
+                          FROM car_state
+                          INNER JOIN users ON car_state.user_id = users.id''')
         car_data = cursor.fetchall()
 
-    # Extract states, timestamps, and map user_ids to usernames
-    states = [row[0] for row in car_data]      # car_state.state
-    timestamps = [row[1] for row in car_data]  # car_state.timestamp
-    usernames = [row[2] for row in car_data]   # users.username
+    states = [row[0] for row in car_data]
+    timestamps = [row[1] for row in car_data]
+    usernames = [row[2] for row in car_data]
 
-
-
-
-    #Generate Frequency Graph
+    # Generate Frequency Graph
     freq_img_data = generate_bar_chart(states, "Car States Frequency", "States", "Frequency")
 
     # Generate State Changes Graph
     time_img_data = generate_line_chart(timestamps, states, "State Changes Over Time", "Timestamps", "States")
-    
+
     return render_template(
         'visualize.html',
-        car_data=zip(states, timestamps, usernames),
+        car_data=zip(timestamps, states, usernames),
         freq_img_data=freq_img_data,
-        time_img_data=time_img_data )
-    
+        time_img_data=time_img_data
+    )
 
 
 def generate_bar_chart(data, title, xlabel, ylabel):
@@ -245,9 +233,8 @@ def generate_line_chart(x_data, y_data, title, xlabel, ylabel):
     img_data = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return img_data
-    
 
-'''
+
 @socketio.on('control_action')
 def handle_control_action(data):
     action = data.get('action')
@@ -261,94 +248,25 @@ def handle_control_action(data):
 
     socketio.emit('new_control_action', {'action': action, 'timestamp': ist_timestamp}, broadcast=True)
 
-    '''
 
-
-esp32_url="http://127.0.0.1:5000/esp32"
-# WebSocket Handlers
 @socketio.on('connect')
 def handle_connect():
-    print("Client connected")
-    emit('server_message', {'message': 'Welcome to the WebSocket server!'})
+    username = session.get('username')
+    if username:
+        emit('user_update', {'message': f"{username} connected."}, broadcast=True)
+
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print("Client disconnected")
-
-# Handle power control (on/off)
-@socketio.on('control_power')
-def handle_control_power(data):
-    global  esp32_pi,global_username
-    power_state = data.get('state')
-    print(f"Power turned {power_state}")
-    emit('power_status', {'state': power_state})
-    if power_state=='on':
-        esp32_pi=0
-    if power_state=='off':
-        esp32_pi=1
-    # Update global variable based on power state
-    if power_state == 'on':
-        esp32_pi = 0
-    elif power_state == 'off':
-        esp32_pi = 1
-
-    try:
-        with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            
-            # Sample power state and user
-            power_state = 'on'  # or 'off'
-            user_id = global_username
-            
-            # Get the current timestamp
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')  # Format timestamp as 'YYYY-MM-DD HH:MM:SS'
-
-            # Insert the power state, timestamp, and user_id into the car_state table
-            cursor.execute('''
-                INSERT INTO car_state (state, timestamp, user_id)
-                VALUES (?, ?, ?)
-            ''', (power_state, timestamp, user_id))
-
-            # Commit the transaction
-            conn.commit()
-
-            print(f"Inserted car state '{power_state}' with timestamp '{timestamp}' for user {user_id} into database.")
-    except sqlite3.Error as e:
-        print(f"Error inserting into database: {e}")
-
-        
-
-# Handle direction control (forward, backward, left, right)
-
-@socketio.on('control_direction')
-def handle_control_direction(data):
-    global  esp32_ci
-    direction = data.get('direction')
-    print(f"Moving: {direction}")
-    emit('direction_status', {'direction': direction})
-    if direction=='left':
-        esp32_ci=3
-    elif direction=='right':
-        esp32_ci=4
-    elif direction=='forward':
-        esp32_ci=1
-    elif direction=='backward':
-        esp32_ci=2
-    elif direction=='diagonal':
-        esp32_ci=5
-
-# Handle mode control (two-wheel, four-wheel)
-@socketio.on('control_mode')
-def handle_control_mode(data):
-    global esp32_mi
-    mode = data.get('mode')
-    print(f"Mode selected: {mode}")
-    emit('mode_status', {'mode': mode})
-    if mode=='4wheel':
-        esp32_mi=0
-    if mode=='2wheel':
-        esp32_mi=1
+    global active_controller, viewers
+    username = session.get('username')
+    if username:
+        if username == active_controller:
+            active_controller = None
+        viewers.discard(username)
+        emit('user_update', {'message': f"{username} disconnected."}, broadcast=True)
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True)
+
