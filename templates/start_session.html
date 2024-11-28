@@ -16,10 +16,39 @@
             position: relative;
         }
 
+        /* Add a landscape warning overlay */
+        .landscape-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: calc(1.5rem + 1vw);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s, filter 0.5s;
+        }
+
+        .landscape-warning p {
+            font-size: calc(1.5rem + 0.5vw);
+            margin-top: 10px;
+        }
+
+        .landscape-warning p strong {
+            font-size: calc(1.8rem + 0.5vw);
+        }
+
         /* Live Cam Section */
         .live-cam {
             width: 50%;
-            height: 59vh; /* Occupies 1/4th of the screen */
+            height: 59vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -35,32 +64,31 @@
 
         .live-cam img {
             width: 61%;
-            height: 53%; /* Adjust height to fit the section */
+            height: 53%;
             object-fit: cover;
             border-radius: 10px;
         }
 
-
-        /*live location*/
         /* Live Location Section */
         .live-location {
-            position: absolute;
-            top: 0;
-            right: 20px;
+            height: 300px;
+            width: 328px;
+            position: relative;
+            top: -59%;
+            left: 51%;
             padding: 10px;
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.5); /* Optional: adds a slight background for visibility */
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
-            width: 44%;  /* Adjust the width to fit 1/4th of the screen */
-            z-index: 10; /* Makes sure it stays on top of other content */
+            /* width: 44%; */
+            z-index: 10;
         }
 
         .live-location img {
-            width: 65%;  /* Ensures the image fills the container */
-            height: 100%; /* Make image take the full height of the container */
-            object-fit: cover; /* Ensures the image covers the space without distortion */
+            width: 65%;
+            height: 62%;
+            object-fit: cover;
         }
-
 
         /* Buttons and Controls */
         .control-panel {
@@ -99,7 +127,7 @@
             color: white;
         }
 
-        .btn-forward, .btn-backward, .btn-right, .btn-left {
+        .btn-accelerate, .btn-brake, .btn-right, .btn-left {
             background-color: #6C757D;
             color: white;
         }
@@ -144,46 +172,93 @@
             left: 50%;
             transform: translateX(-50%);
         }
+
+        /* Blur effect for background when in portrait mode */
+        .blur-background {
+            filter: blur(10px);
+        }
+        .btn-control {
+            position: fixed; /* Ensures the button stays in place even when scrolling */
+            bottom: 110px; /* Distance from the bottom of the screen */
+            right: 20px; /* Distance from the right side of the screen */
+            padding: 21px 29px; /* Adds space inside the button */
+            background-color: #007bff; /* Blue background */
+            color: white; /* White text color */
+            border: none; /* Removes border */
+            border-radius: 5px; /* Slightly rounded corners */
+            font-size: 16px; /* Adjust font size */
+            cursor: pointer; /* Changes cursor to pointer on hover */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.btn-control:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
     </style>
 </head>
 <body>
-    <!-- Live Cam Section -->
-    <div class="live-cam">
-        <h1>Live Cam</h1>
-        <img src="/static/iStockMac99-186876633-696x392.jpg" alt="Live Camera Feed">
-    </div>
-    <!-- Live Location -->
-    <div class="live-location">
-        <h1>Live Location</h1>
-        <img src="/static/location-map.jpg" alt="Live Camera Feed">
+    <!-- Landscape Warning -->
+    <div class="landscape-warning" id="landscapeWarning">
+        <p><strong>Please rotate your device to landscape mode</strong></p>
+        <p>The app is optimized for landscape view.</p>
     </div>
 
-    <!-- Mode Control Buttons -->
-    <div class="mode-buttons">
-        <button class="btn-2wheel" onclick="controlMode('2wheel')">Two-Wheel Mode</button>
-        <button class="btn-4wheel" onclick="controlMode('4wheel')">Four-Wheel Mode</button>
-    </div>
+    <!-- Main Content -->
+    <div class="app-content">
+        <!-- Live Cam Section -->
+        <div class="live-cam">
+            <h1>Live Cam</h1>
+            <img id="live-cam-feed" src="/static/iStockMac99-186876633-696x392.jpg" alt="Live Camera Feed">
+        </div>
 
-    <!-- Power Control Buttons -->
-    <div class="power-buttons">
-        <button class="btn-on" onclick="controlPower('on')">Turn On</button>
-        <button class="btn-off" onclick="controlPower('off')">Turn Off</button>
-    </div>
+        <!-- Live Location -->
+        <div class="live-location">
+            <h1>Live Location</h1>
+            <img src="/static/location-map.jpg" alt="Live Location Feed">
+        </div>
 
-    <!-- Direction Control Buttons -->
-    <div class="direction-buttons-left">
-        <button class="btn-forward" onclick="controlDirection('forward')">Forward</button>
-        <button class="btn-backward" onclick="controlDirection('backward')">Backward</button>
-    </div>
+        <!-- Mode Control Buttons -->
+        <!-- 
+        <div class="mode-buttons">
+            <button class="btn-2wheel" onclick="controlMode('2wheel')">Two-Wheel Mode</button>
+            <button class="btn-4wheel" onclick="controlMode('4wheel')">Four-Wheel Mode</button>
+        </div> 
+        -->
 
-    <div class="direction-buttons-right">
-        <button class="btn-left" onclick="controlDirection('left')">Left</button>
-        <button class="btn-right" onclick="controlDirection('right')">Right</button>
+        <!-- Power Control Buttons -->
+        <div class="power-buttons">
+            <button class="btn-on" onclick="controlPower('on')">Turn On</button>
+            <button class="btn-off" onclick="controlPower('off')">Turn Off</button>
+        </div>
+
+        <!-- Direction Control Buttons -->
+        <div class="direction-buttons-left">
+            <button class="btn-accelerate" onclick="controlDirection('accelerate')">accelerate</button>
+            <button class="btn-brake" onclick="controlDirection('brake')">brake</button>
+        </div>
+
+        <div class="direction-buttons-right">
+            <button class="btn-left" onclick="controlDirection('left')">Left</button>
+            <button class="btn-right" onclick="controlDirection('right')">Right</button>
+        </div>
+
+        <button class="btn-control" onclick="toggleGear()">Gear: <span id="gear-display">D</span></button>
+    
     </div>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
         const socket = io.connect('http://localhost:5000');
+
+        function startCameraFeed(ipAddress) {
+            const cameraUrl = `http://${ipAddress}/video`; 
+            document.getElementById("live-cam-feed").src = cameraUrl;
+        }
+
+        const ipCameraAddress = "172.16.66.107:8080";
+        startCameraFeed(ipCameraAddress);
 
         function controlPower(state) {
             console.log(`Power: ${state}`);
@@ -195,10 +270,58 @@
             socket.emit('control_direction', { direction: direction });
         }
 
-        function controlMode(mode) {
-            console.log(`Mode selected: ${mode}`);
-            socket.emit('control_mode', { mode: mode });
+        // function controlMode(mode) {
+        //     console.log(`Mode selected: ${mode}`);
+        //     socket.emit('control_mode', { mode: mode });
+        // }
+
+        function handleOrientationChange() {
+            const warning = document.getElementById('landscapeWarning');
+            const appContent = document.querySelector('.app-content');
+
+            warning.style.transition = 'opacity 0.5s';
+            appContent.style.transition = 'filter 0.5s';
+
+            if (window.innerWidth > window.innerHeight) {
+                warning.style.opacity = '0';
+                setTimeout(() => (warning.style.display = 'none'), 500);
+                appContent.classList.remove('blur-background');
+            } else {
+                warning.style.display = 'flex';
+                setTimeout(() => (warning.style.opacity = '1'), 0);
+                appContent.classList.add('blur-background');
+            }
         }
+
+        function adjustLayout() {
+            const liveCam = document.querySelector('.live-cam');
+            const liveLocation = document.querySelector('.live-location');
+            const viewportHeight = window.innerHeight;
+
+            liveCam.style.height = `${viewportHeight * 0.6}px`;
+            liveLocation.style.height = `${viewportHeight * 0.4}px`;
+        }
+
+        
+        let gear = "D"; // Default gear
+
+        // function controlCar(action) {
+        //     console.log(`mode: ${action}`);
+        //     socket.emit('control_mode', { action });
+        // }
+
+        function toggleGear() {
+            gear = gear === "D" ? "R" : "D"; // Toggle between Drive and Reverse
+            document.getElementById('gear-display').innerText = gear;
+            console.log(`Gear toggled to: ${gear}`);
+            socket.emit('control_mode', {gear: gear });
+        }
+    
+
+        window.addEventListener('load', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+        window.addEventListener('load', adjustLayout);
+        window.addEventListener('resize', adjustLayout);
     </script>
 </body>
 </html>
