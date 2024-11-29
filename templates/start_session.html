@@ -235,7 +235,14 @@
 
         <!-- Direction Control Buttons -->
         <div class="direction-buttons-left">
-            <button class="btn-accelerate" onclick="controlDirection('accelerate')">accelerate</button>
+            <button class="btn-accelerate"
+            onmousedown="controlDirection('accelerate')"
+            onmouseup="controlDirection('brake')"
+            ontouchstart="controlDirection('accelerate')"
+            ontouchend="controlDirection('brake')">
+        Accelerate
+        </button>
+
             <button class="btn-brake" onclick="controlDirection('brake')">brake</button>
         </div>
 
