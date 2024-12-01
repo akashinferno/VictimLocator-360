@@ -4,24 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Victim Locator 360</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500&display=swap" rel="stylesheet">
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: url('{{ url_for("static", filename="6869461.jpg") }}') no-repeat center center fixed;
-            background-size: cover;
+            background: radial-gradient(circle, #000000, #0d0d0d, #001f3f);
+            font-family: 'Rajdhani', sans-serif;
+            color: #e0e0e0;
             margin: 0;
-            color: #fff;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            align-items: center;
             position: relative;
+            overflow-y: auto;
         }
 
-        /* Removed black blur effect */
-        body::before {
-            content: '';
+        /* Particles.js container */
+        #particles-js {
             position: absolute;
             top: 0;
             left: 0;
@@ -30,92 +36,43 @@
             z-index: -1;
         }
 
+        /* Header */
         header {
-            background: linear-gradient(90deg, #318CE7, #2566A3);
-            padding: 15px 0;
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(0, 128, 192, 0.8));
             text-align: center;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            position: fixed;
-            top: 0;
+            padding: 20px 0;
             width: 100%;
-            z-index: 1000;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
         }
 
         header h1 {
-            color: white;
-            font-size: 2.5rem;
-            margin: 0;
-            letter-spacing: 1px;
-            animation: fadeIn 1.2s ease-in-out;
-        }
-
-        .welcome-message {
-            margin-top: 100px;
-            font-size: 1.8rem;
-            color: #FFD700;
+            font-size: 3rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffff;
+            text-shadow: 0 0 15px #00e6e6, 0 0 30px #00cccc;
+            flex: 1;
             text-align: center;
-            font-weight: bold;
-            animation: fadeIn 1.5s ease-in-out;
-        }
-
-        .container {
-            margin-top: 140px;
-            animation: fadeInUp 1.5s ease-in-out;
-        }
-
-        .btn-custom {
-            background-color: #318CE7;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            width: 100%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-custom:hover {
-            background-color: #2566A3;
-            transform: scale(1.05);
-        }
-
-        .btn-disabled {
-            background-color: #cccccc;
-            color: #666;
-            cursor: not-allowed;
-        }
-
-        .btn-warning {
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-warning:hover {
-            background-color: #ff9933;
-        }
-
-        .info-box {
-            background-color: rgba(34, 34, 34, 0.85);
-            border: 2px solid #318CE7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         footer {
-            background: linear-gradient(90deg, #318CE7, #2566A3);
-            color: rgba(255, 255, 255, 0.8);
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(0, 128, 192, 0.8));
             text-align: center;
-            padding: 10px;
+            padding: 15px 0;
+            color: rgba(255, 255, 255, 0.9);
+            width: 100%;
             position: fixed;
             bottom: 0;
-            width: 100%;
-            animation: fadeIn 2s ease-in-out;
+            box-shadow: 0px -4px 10px rgba(0, 255, 255, 0.4);
+            z-index: 10;
         }
 
         footer a {
-            color: #FFD700;
+            color: #00ffff;
             text-decoration: none;
         }
 
@@ -123,111 +80,223 @@
             text-decoration: underline;
         }
 
-        .grid-container {
-            margin-top: 30px;
+        /* Buttons */
+        .btn-custom {
+            background: linear-gradient(135deg, #0b3d91, #00ffff);
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: center;
+            width: 200px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5);
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+        .btn-custom:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8), 0 0 35px rgba(0, 128, 192, 0.7);
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn-disabled {
+            background: #333;
+            color: #777;
+            font-family: 'Orbitron', sans-serif;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(15, 15, 15, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 128, 192, 0.5);
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .info-box h3,
+        .info-box h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00e6e6, 0 0 20px #00cccc;
+        }
+
+        .info-box p {
+            font-family: 'Rajdhani', sans-serif;
+            color: #b0b0b0;
+        }
+
+        /* Button Alignment */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        /* Glow Animations */
+        [data-aos] {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        [data-aos].aos-animate {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
+    <!-- Particles.js Container -->
+    <div id="particles-js"></div>
+
     <!-- Header Section -->
     <header>
+        <button onclick="location.reload()" class="btn-custom mt-2">Refresh</button>
         <h1>VICTIM LOCATOR 360</h1>
+        <a href="{{ url_for('logout') }}" class="btn-custom bg-red-500 mt-2">Logout</a>
     </header>
 
     <!-- Welcome Message -->
-    <div class="welcome-message container">
-        Welcome, {{ session.get('username', 'Guest') }}
+    <div class="text-center mt-12" data-aos="fade-up">
+        <h2 class="text-4xl text-cyan-400 font-semibold">
+            Welcome, {{ session.get('username', 'Guest') }}
+        </h2>
     </div>
 
     <!-- Main Content Section -->
-    <main class="container grid-container">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-            <div class="col">
+    <main>
+	
+         	
+        <!-- Buttons in a Single Line -->
+        <div class="button-container" data-aos="fade-up">
+            <div>
                 {% if session.get('username') == controller %}
-                    <a href="{{ url_for('start_session') }}" class="btn btn-custom btn-lg">Car Controls</a>
+                    <a href="{{ url_for('start_session') }}" class="btn-custom">Car Controls</a>
                 {% else %}
-                    <button class="btn btn-disabled btn-lg btn-custom" disabled>Car Controls</button>
+                    <button class="btn-disabled">Car Controls</button>
                 {% endif %}
             </div>
-            <div class="col">
-                <a href="{{ url_for('visualize') }}" class="btn btn-custom btn-lg">Visualize Graph</a>
+            <div>
+                <a href="{{ url_for('visualize') }}" class="btn-custom">Visualize Graph</a>
             </div>
-            <div class="col">
-                <a href="{{ url_for('view_requests') }}" class="btn btn-secondary btn-lg btn-custom">View Requests</a>
+			 <div>
+        <a href="{{ url_for('about') }}" class="btn-custom bg-teal-500">About</a>
+          </div>
+            <div>
+                <a href="{{ url_for('view_requests') }}" class="btn-custom">View Requests</a>
             </div>
-            <div class="col">
-                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg btn-custom">Logout</a>
+            <div>
+                <button onclick="window.location.href='/admin_login'" class="btn-custom bg-yellow-500">
+                    Manage Database
+                </button>
             </div>
         </div>
 
-        <!-- Controller and Car State -->
-        <div class="info-box text-center">
+        <!-- Info Box -->
+        <section class="info-box" data-aos="fade-up" data-aos-delay="200">
             <h4>Controller: {{ controller }}</h4>
-            <h5>Car State: {{ car_state }}</h5>
-
+            <p>Car State: {{ car_state }}</p>
             {% if session.get('username') == controller %}
-                <h3 class="text-success">You are the Controller</h3>
+                <h3 class="text-green-400 font-bold text-lg">You are the Controller</h3>
             {% else %}
-                <h3 class="text-danger">You are a Viewer</h3>
-                <p>Control actions are disabled. You can only view the updates.</p>
-                <!-- Request Control Form -->
-                <form action="{{ url_for('request_control') }}" method="POST">
-                    <button type="submit" class="btn btn-warning btn-lg btn-custom">Request Control</button>
+                <h3 class="text-red-400 font-bold text-lg">You are a Viewer</h3>
+                <p class="text-gray-400">Control actions are disabled. You can only view the updates.</p>
+                <form action="{{ url_for('request_control') }}" method="POST" class="mt-4">
+                    <button type="submit" class="btn-custom bg-yellow-400">Request Control</button>
                 </form>
             {% endif %}
-        </div>
+        </section>
     </main>
 
     <!-- Footer Section -->
     <footer>
-        &copy; 2024 Victim Locator 360 - by TEAM CODE-O-PHILES | <a href="#">Privacy Policy</a>
+        &copy; 2024 Victim Locator 360 - by TEAM CODE-O-PHILES | <a href="{{ url_for('privacy_policy') }}" class="text-cyan-400 hover:underline">Privacy Policy</a>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script>
-        const socket = io.connect('http://localhost:5000');
-
-        socket.on('controller_update', (data) => {
-            document.getElementById('controller').textContent = `Controller: ${data.controller}`;
+        AOS.init({
+            duration: 600,
+            easing: 'ease-in-out',
+            once: true,
         });
-
-        socket.on('car_state_update', (data) => {
-            document.getElementById('car-state').textContent = `Car State: ${data.state}`;
-        });
-
-        socket.on('control_request', (data) => {
-            alert(`${data.requester} is requesting control access.`);
-        });
-
-        socket.on('control_granted', (data) => {
-            alert(`Control has been transferred to ${data.new_controller}.`);
-            window.location.reload();
-        });
-
-        socket.on('control_denied', () => {
-            alert("Your control request was denied.");
+    </script>
+    <!-- Particles.js Configuration -->
+    <script>
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#00ffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false
+                },
+                "size": {
+                    "value": 3,
+                    "random": true
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#00ffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 2,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "repulse": {
+                        "distance": 100,
+                        "duration": 0.4
+                    }
+                }
+            }
         });
     </script>
 </body>

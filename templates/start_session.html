@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motor Control - Car Layout</title>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.4.1/dist/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,42 +47,61 @@
         }
 
         /* Live Cam Section */
-        .live-cam {
-            width: 50%;
-            height: 59vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #333;
-            color: #fff;
-        }
+            .live-cam {
+        width: 50%; /* Adjust the container size */
+        height: 40vh; /* Smaller height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #333;
+        color: #fff;
+        position: absolute;
+        top: 31%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 19px;
+        overflow: hidden; /* Ensure no part of the image overflows */
+    }
 
-        .live-cam h1 {
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
+    .live-cam img {
+        position: absolute; /* Keep image independent of the container size */
+        top: 0;
+        left: 0;
+        width: 100%; /* Keep full width */
+        height: 100%; /* Keep full height */
+        object-fit: cover; /* Maintain aspect ratio and fill the container */
+        border-radius: 10px;
+    }
 
-        .live-cam img {
-            width: 61%;
-            height: 53%;
-            object-fit: cover;
-            border-radius: 10px;
-        }
+    
 
+    .live-cam h1 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    background-color: rgba(0, 0, 0, 0.6); /* Black background with slight transparency */
+    color: white; /* White text color */
+    padding: 5px 10px; /* Add some padding around the text */
+    border-radius: 5px; /* Optional: rounded corners for the background */
+    position: absolute; /* Position it over the camera feed */
+    top: 10px; /* Distance from the top of the live cam section */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for centering */
+    z-index: 10; 
+}
         /* Live Location Section */
         .live-location {
-            height: 300px;
-            width: 328px;
-            position: relative;
-            top: -59%;
-            left: 51%;
-            padding: 10px;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            /* width: 44%; */
-            z-index: 10;
+            height: 300px; /* Height of the live location box */
+            width: 328px;  /* Width of the live location box */
+            position: absolute; /* Position to allow for precise placement */
+            top: 20px; /* Distance from the top of the screen */
+            right: 20px; /* Distance from the right side of the screen */
+            padding: 10px; /* Padding inside the box */
+            text-align: center; /* Center text alignment */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            color: white; /* White text color */
+            z-index: 10; /* Ensure it appears above other elements */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .live-location img {
@@ -192,11 +212,77 @@
             transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
-.btn-control:hover {
+.btn-control:hover { 
     background-color: #0056b3; /* Darker blue on hover */
 }
 
-    </style>
+#sensorBox {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 370px; /* Adjust to fit the screen */
+            max-height: 400px; /* Limit the height */
+            overflow-y: auto; /* Allow scrolling when content exceeds max height */
+            
+        }
+
+        #sensorBox table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #sensorBox th, #sensorBox td {
+            padding: 8px; /* Added padding for better spacing */
+            border: 1px solid #007bff;
+            text-align: center;
+        }
+
+        #sensorBox th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #sensorBox td {
+            background-color: #f9f9f9;
+            word-wrap: break-word; /* Ensures text doesn't overflow */
+        }
+
+        #sensorBox tr:nth-child(even) td {
+            background-color: #f1f1f1;
+        }
+
+        #sensorBox tr:hover td {
+            background-color: #e0e0e0;
+        }
+
+        #sensorBox td:nth-child(1) {
+            width: 40%; /* Adjust the width of the sensor name column */
+        }
+
+        #sensorBox td:nth-child(2) {
+            width: 30%; /* Adjust the width of the value column */
+        }
+
+        #sensorBox td:nth-child(3) {
+            width: 30%; /* Adjust the width of the timestamp column */
+        }
+
+        #sensorData {
+            display: block;
+            max-height: 300px; /* Adjust based on your screen size */
+            overflow-y: auto; /* Make the table scrollable */
+        }
+
+        #sensorTable td, #sensorTable th {
+            height: 40px;  /* Adjust as needed */
+            overflow: hidden;
+        }
+
+
+
+
+</style>
+    
 </head>
 <body>
     <!-- Landscape Warning -->
@@ -218,6 +304,77 @@
             <h1>Live Location</h1>
             <img src="/static/location-map.jpg" alt="Live Location Feed">
         </div>
+        
+        <!-- Sensor Box -->
+        <div id="sensorBox" style="position: absolute; top: -1px; left: 50px;">
+            <h1>Real-Time Sensor Data</h1>
+            <table id="sensorTable">
+                <tbody id="sensorData">
+                    <!-- Add column-specific headings -->
+                    <tr>
+                        <td style="text-align: center; font-weight: bold;">Sensor Name</td>
+                        <td style="text-align: center; font-weight: bold;">Value</td>
+                        <td style="text-align: center; font-weight: bold;">Timestamp</td>
+                    </tr>
+                    <!-- Placeholder row -->
+                    <tr id="placeholderRow">
+                        <td colspan="3">Waiting for data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+
+
+ <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+<script>
+ // Connect to WebSocket
+ const socket = io.connect('http://localhost:5000');
+
+// Listen for 'sensor_reading' event
+socket.on('sensor_reading', function(data) {
+    console.log('Received sensor data:', data);
+
+    const sensorDataTable = document.getElementById('sensorData');
+    const placeholderRow = document.getElementById('placeholderRow');
+
+    // Remove the placeholder row if data is received
+    if (placeholderRow) {
+        placeholderRow.remove();
+    }
+
+    // Clear existing rows except for the column headings
+    const columnHeadingRow = sensorDataTable.querySelector("tr:first-child");
+    sensorDataTable.innerHTML = "";
+
+    // Re-add the column-specific headings
+    if (columnHeadingRow) sensorDataTable.appendChild(columnHeadingRow);
+
+    // Create a new row for the sensor data
+    const row = document.createElement('tr');
+
+    // Create and append the sensor name cell
+    const sensorNameCell = document.createElement('td');
+    sensorNameCell.textContent = data.sensor_name || 'Unknown'; // Default if no sensor_name
+    row.appendChild(sensorNameCell);
+
+    // Create and append the value cell
+    const valueCell = document.createElement('td');
+    valueCell.textContent = data.value || 'N/A'; // Default if no value
+    row.appendChild(valueCell);
+
+    // Create and append the timestamp cell
+    const timestampCell = document.createElement('td');
+    timestampCell.textContent = data.timestamp || new Date().toLocaleString(); // Default to current time
+    row.appendChild(timestampCell);
+
+    // Append the new row to the table body
+    sensorDataTable.appendChild(row);
+   });
+
+           
+        </script>
 
         <!-- Mode Control Buttons -->
         <!-- 
@@ -247,24 +404,38 @@
         </div>
 
         <div class="direction-buttons-right">
-            <button class="btn-left" onclick="controlDirection('left')">Left</button>
-            <button class="btn-right" onclick="controlDirection('right')">Right</button>
+            <button class="btn-left"  onmousedown="controlDirection('left')"
+            onmouseup="controlDirection('brake')"
+            ontouchstart="controlDirection('left')"
+            ontouchend="controlDirection('brake')"> 
+            Left
+            </button>
+
+
+
+
+            <button class="btn-right" onmousedown="controlDirection('right')"
+            onmouseup="controlDirection('brake')"
+            ontouchstart="controlDirection('right')"
+            ontouchend="controlDirection('brake')"> 
+            Right
+            </button>
         </div>
 
         <button class="btn-control" onclick="toggleGear()">Gear: <span id="gear-display">D</span></button>
     
     </div>
 
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script> 
     <script>
-        const socket = io.connect('http://localhost:5000');
+        // const socket = io.connect('http://localhost:5000');
 
         function startCameraFeed(ipAddress) {
             const cameraUrl = `http://${ipAddress}/video`; 
             document.getElementById("live-cam-feed").src = cameraUrl;
         }
 
-        const ipCameraAddress = "172.16.66.107:8080";
+        const ipCameraAddress = "192.168.29.99:8080";
         startCameraFeed(ipCameraAddress);
 
         function controlPower(state) {

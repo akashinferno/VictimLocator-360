@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Database</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500&display=swap" rel="stylesheet">
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+    body {
+        background: radial-gradient(circle, #000000, #0d0d0d, #001f3f);
+        font-family: 'Rajdhani', sans-serif;
+        color: #e0e0e0;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        overflow-y: auto; /* Enables vertical scrolling */
+    }
+
+    /* Particles.js container */
+    #particles-js {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+
+        /* Header */
+        .header-container {
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(0, 128, 192, 0.8));
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
+        }
+
+        .header-container h1 {
+            font-size: 2.5rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffff;
+            text-shadow: 0 0 15px #00e6e6, 0 0 30px #00cccc;
+            margin: 0;
+        }
+
+        .header-container .btn-logout {
+            background: linear-gradient(135deg, #0b3d91, #00ffff);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: #ffffff;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5);
+        }
+
+        .header-container .btn-logout:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8), 0 0 35px rgba(0, 128, 192, 0.7);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            background: rgba(15, 15, 15, 0.95);
+            border-collapse: collapse;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 128, 192, 0.5);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #00ffff;
+        }
+
+        th {
+            background: linear-gradient(135deg, #0b3d91, #00ffff);
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            text-shadow: 0 0 10px #00e6e6, 0 0 20px #00cccc;
+        }
+
+        td {
+            color: #00ffff; /* Updated to cyan-blue for better visibility */
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        /* Buttons in Table */
+        .btn {
+            background: linear-gradient(135deg, #0b3d91, #00ffff);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 8px;
+            color: #ffffff;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 25px rgba(0, 128, 192, 0.7);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4c4c, #ff1a1a);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #ff9900);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        /* Section Titles */
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00e6e6, 0 0 20px #00cccc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles.js Container -->
+    <div id="particles-js"></div>
+
+    <!-- Header Section -->
+<div class="header-container" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(0, 128, 192, 0.8)); box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);">
+    <!-- Refresh Button -->
+    <button onclick="location.reload()" style="background: linear-gradient(135deg, #0b3d91, #00ffff); color: white; font-family: 'Orbitron', sans-serif; font-weight: bold; padding: 10px 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5); text-shadow: 0 0 5px #00e6e6; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;" 
+            onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 255, 0.8), 0 0 35px rgba(0, 128, 192, 0.7)';" 
+            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5)';">
+        Refresh
+    </button>
+    
+    <!-- Centered Title -->
+    <h1 style="margin: 0; flex: 1; text-align: center; font-size: 2rem; font-family: 'Orbitron', sans-serif; color: #00ffff; text-shadow: 0 0 15px #00e6e6, 0 0 30px #00cccc;">Manage Database</h1>
+    
+    <!-- Logout Button -->
+    <a href="/logout" style="background: linear-gradient(135deg, #0b3d91, #00ffff); color: white; font-family: 'Orbitron', sans-serif; font-weight: bold; padding: 10px 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5); text-shadow: 0 0 5px #00e6e6; transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; cursor: pointer;" 
+       onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 255, 0.8), 0 0 35px rgba(0, 128, 192, 0.7)';" 
+       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 255, 0.6), 0 0 25px rgba(0, 128, 192, 0.5)';">
+        Logout Admin
+    </a>
+</div>
+
+
+    <!-- Main Content -->
+    <div class="container mt-8">
+        <!-- Users Table -->
+        <section data-aos="fade-up">
+            <h2>Users</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <form method="POST" action="/update_user">
+                                <td>{{ user[0] }}</td>
+                                <td><input type="text" name="username" value="{{ user[1] }}" class="form-control" required></td>
+                                <td><input type="password" name="password" value="{{ user[2] }}" class="form-control" required></td>
+                                <td>
+                                    <input type="hidden" name="user_id" value="{{ user[0] }}">
+                                    <button type="submit" class="btn btn-warning">Save</button>
+                                </form>
+                                <form method="POST" action="/delete_user/{{ user[0] }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <form method="POST" action="/insert_user" class="d-flex mt-3">
+                    <input type="text" name="username" placeholder="New Username" class="form-control me-2" required>
+                    <input type="password" name="password" placeholder="New Password" class="form-control me-2" required>
+                    <button type="submit" class="btn btn-success">Add User</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Car States Table -->
+        <section data-aos="fade-up">
+            <h2>Car States</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>State</th>
+                            <th>Timestamp</th>
+                            <th>User ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for state in car_states %}
+                        <tr>
+                            <form method="POST" action="/update_car_state">
+                                <td>{{ state[0] }}</td>
+                                <td><input type="text" name="state" value="{{ state[1] }}" class="form-control" required></td>
+                                <td><input type="text" name="timestamp" value="{{ state[2] }}" class="form-control" required></td>
+                                <td><input type="text" name="user_id" value="{{ state[3] }}" class="form-control" required></td>
+                                <td>
+                                    <input type="hidden" name="state_id" value="{{ state[0] }}">
+                                    <button type="submit" class="btn btn-warning">Save</button>
+                                </form>
+                                <form method="POST" action="/delete_car_state/{{ state[0] }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Control Requests Table -->
+        <section data-aos="fade-up">
+            <h2>Control Requests</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Requester</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr>
+                            <form method="POST" action="/update_request">
+                                <td>{{ request[0] }}</td>
+                                <td><input type="text" name="requester" value="{{ request[1] }}" class="form-control" required></td>
+                                <td><input type="text" name="status" value="{{ request[2] }}" class="form-control" required></td>
+                                <td><input type="text" name="timestamp" value="{{ request[3] }}" class="form-control" required></td>
+                                <td>
+                                    <input type="hidden" name="request_id" value="{{ request[0] }}">
+                                    <button type="submit" class="btn btn-warning">Save</button>
+                                </form>
+                                <form method="POST" action="/delete_control_request/{{ request[0] }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 600,
+            easing: 'ease-in-out',
+            once: true,
+        });
+    </script>
+    <!-- Particles.js Configuration -->
+    <script>
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#00ffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false
+                },
+                "size": {
+                    "value": 3,
+                    "random": true
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#00ffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 2,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "repulse": {
+                        "distance": 100,
+                        "duration": 0.4
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
