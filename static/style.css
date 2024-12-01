@@ -32,6 +32,37 @@ body::before {
     z-index: -1;
 }
 
+/* Text Box Styling */
+input[type="text"],
+input[type="password"],
+textarea {
+    background: rgba(15, 15, 15, 0.8); /* Match the dark theme */
+    color: #00ffff; /* Cyan text color */
+    border: 1px solid #00ffff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+    width: 100%; /* Full width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 255, 0.2);
+    transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    border-color: #2566A3; /* Brighter blue on focus */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 128, 192, 0.5);
+    outline: none; /* Remove default outline */
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+textarea::placeholder {
+    color: rgba(0, 255, 255, 0.5); /* Subtle placeholder color */
+    font-style: italic;
+}
+
 /* Header Styling */
 header {
     display: flex;
@@ -255,6 +286,26 @@ table tr:hover {
     margin-top: 10px;
 }
 
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 255, 255, 0.8);
+    color: #000;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
+    animation: fadeIn 0.5s ease, fadeOut 0.5s ease 4.5s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
 .app-content {
     display: none; /* Initially hidden until landscape check */
 }
@@ -327,6 +378,7 @@ footer a:hover {
     }
 }
 
+
 @media (orientation: landscape) {
     .live-cam, .live-location {
         width: 45%;
@@ -350,4 +402,92 @@ footer a:hover {
     .landscape-warning {
         display: flex; /* Show warning */
     }
+}
+
+/* Car Controls Styling */
+.car-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-control {
+    padding: 15px 30px;
+    font-size: 16px;
+    background-color: #318CE7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.btn-control:hover {
+    background-color: #2566A3;
+    transform: scale(1.1);
+}
+
+/* Reposition controls */
+.direction-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    position: relative;
+}
+
+.btn-control {
+    background-color: #318CE7;
+    color: white;
+    padding: 15px 30px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.btn-control:hover {
+    background-color: #2566A3;
+    transform: scale(1.1);
+}
+
+/* New control layout */
+.control-layout {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 50px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.left-controls,
+.right-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.center-gear {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.btn-control {
+    padding: 15px 30px;
+    font-size: 16px;
+    background-color: #318CE7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.btn-control:hover {
+    background-color: #2566A3;
+    transform: scale(1.1);
 }
