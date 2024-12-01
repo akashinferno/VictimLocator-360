@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car and Drone Controls</title>
+    <style>
+        .controls {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Controls Interface</h1>
+
+    <!-- Buttons to switch interfaces -->
+    <button onclick="showControls('car')">Car Controls</button>
+    <button onclick="showControls('drone')">Drone Controls</button>
+
+    <!-- Car Controls -->
+    <div id="car-controls" class="controls active">
+        <h2>Car Controls</h2>
+        <button>Accelerate</button>
+        <button>Brake</button>
+        <button>Turn Left</button>
+        <button>Turn Right</button>
+    </div>
+
+    <!-- Drone Controls -->
+    <div id="drone-controls" class="controls">
+        <h2>Drone Controls</h2>
+        <button>Ascend</button>
+        <button>Descend</button>
+        <button>Move Forward</button>
+        <button>Move Backward</button>
+    </div>
+
+    <script>
+        function showControls(mode) {
+            // Hide all controls
+            document.getElementById('car-controls').classList.remove('active');
+            document.getElementById('drone-controls').classList.remove('active');
+
+            // Show the selected controls
+            if (mode === 'car') {
+                document.getElementById('car-controls').classList.add('active');
+            } else if (mode === 'drone') {
+                document.getElementById('drone-controls').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
