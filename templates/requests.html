@@ -148,6 +148,8 @@
 <body>
     <!-- Particles.js Container -->
     <div id="particles-js"></div>
+	
+	
 
     <!-- Header Section -->
     <div class="header-container" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 255, 255, 0.8), rgba(0, 128, 192, 0.8)); box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);">
@@ -168,6 +170,23 @@
         Back to Dashboard
         </a>
     </div>
+    
+	  <!-- Display Flash Message as Modal -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="errorModal" class="fixed inset-0 flex items-center justify-center z-50 bg-gray-800 bg-opacity-50">
+                <div class="bg-gray-900 border-2 border-cyan-500 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+                    <p class="text-cyan-400 font-bold text-lg">
+                        Only the current controller can manage requests.
+                    </p>
+                    <button onclick="document.getElementById('errorModal').style.display='none'" class="mt-4 bg-cyan-500 text-black px-4 py-2 rounded-md hover:bg-cyan-600 transition duration-200">
+                        Close
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+
 
     <!-- Main Content -->
     <div class="container mt-8">
@@ -220,6 +239,17 @@
             once: true,
         });
     </script>
+	
+	<script>
+        // JavaScript to ensure modal behaves correctly
+        document.addEventListener("DOMContentLoaded", function() {
+            const errorModal = document.getElementById("errorModal");
+            if (errorModal) {
+                errorModal.style.display = "flex";
+            }
+        });
+    </script>
+	
     <!-- Particles.js Configuration -->
     <script>
         particlesJS('particles-js', {

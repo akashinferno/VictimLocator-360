@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radargram Display with Mapping</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+
+      #map {
+        width: 400px;
+        height: 400px;
+        background-color: white;
+        border: 2px solid black;
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .trail {
+        width: 20px;
+        height: 20px;
+        background-color: rgb(33, 57, 62);
+        position: absolute;
+      }
+
+      .red-tile {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
+        z-index: 1; /* Below the rover image */
+        border-radius: 50%;
+      }
+
+      #rover-container {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+      }
+
+      #rover-symbol {
+        width: 20px;
+        height: 20px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: absolute;
+        z-index: 2; /* Above the red tile */
+        border-radius: 50%;
+      }
+
+      #radargram-box {
+        width: 300px;
+        height: 300px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f9f9f9;
+      }
+
+      #radargram-box img {
+        max-width: 100%;
+        max-height: 100%;
+        display: none;
+      }
+
+      #error-message {
+        color: red;
+        font-size: 14px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map">
+      <div id="rover-container">
+        <div id="rover-symbol"></div>
+      </div>
+    </div>
+
+    <h1>Radargram Display</h1>
+
+    <div id="radargram-box">
+      <p id="error-message"></p>
+      <img id="radargram-image" src="" alt="Radargram" />
+    </div>
+
+    <script>
+      // Mapping logic for rover tracking
+      const map = document.getElementById("map");
+      const roverContainer = document.getElementById("rover-container");
+      const roverSymbol = document.getElementById("rover-symbol");
+      const stepSize = 20;
+      const mapWidth = 400;
+      const mapHeight = 400;
+
+      const droneURL = "static/12659596.png"; // Replace with your drone image URL
+      roverSymbol.style.backgroundImage = `url(${droneURL})`;
+
+      let roverX = mapWidth / 2 - 10; // Center X
+      let roverY = mapHeight / 2 - 10; // Center Y
+      let roverAngle = 0;
+
+      async function updateRoverPosition() {
+        try {
+          const response = await fetch("/esp32");
+          const data = await response.json();
+
+          const previousX = roverX;
+          const previousY = roverY;
+
+          if (data.controller === "left") {
+            roverAngle -= 15;
+          } else if (data.controller === "right") {
+            roverAngle += 15;
+          }
+
+          roverAngle = (roverAngle + 360) % 360;
+
+          if (data.controller === "accelerate" && data.mode === "drive") {
+            roverX += stepSize * Math.sin((roverAngle * Math.PI) / 180);
+            roverY -= stepSize * Math.cos((roverAngle * Math.PI) / 180);
+          } else if (
+            data.controller === "accelerate" &&
+            data.mode === "reverse"
+          ) {
+            roverX -= stepSize * Math.sin((roverAngle * Math.PI) / 180);
+            roverY += stepSize * Math.cos((roverAngle * Math.PI) / 180);
+          }
+
+          roverX = Math.max(0, Math.min(roverX, mapWidth - 20));
+          roverY = Math.max(0, Math.min(roverY, mapHeight - 20));
+
+          if (previousX !== roverX || previousY !== roverY) {
+            const trail = document.createElement("div");
+            trail.classList.add("trail");
+            trail.style.top = `${previousY}px`;
+            trail.style.left = `${previousX}px`;
+            map.appendChild(trail);
+          }
+
+          roverContainer.style.top = `${roverY}px`;
+          roverContainer.style.left = `${roverX}px`;
+          roverSymbol.style.transform = `rotate(${roverAngle}deg)`;
+        } catch (error) {
+          console.error("Error fetching rover position:", error);
+        }
+      }
+
+      // Call rover update less frequently
+      setInterval(updateRoverPosition, 500);
+
+      // Connect to the Socket.IO server
+      const host = window.location.hostname;
+      const port = 5000; // Change to the desired port
+      const protocol = window.location.protocol;
+      const serverURL = `${protocol}//${host}:${port}`;
+      console.log(`Connecting to Socket.IO server at: ${serverURL}`);
+
+      const socket = io.connect(serverURL);
+      console.log("Attempting to connect to Socket.IO server...");
+
+      socket.on("connect", () => {
+        console.log("Successfully connected to Socket.IO server.");
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("Error connecting to Socket.IO server:", error);
+      });
+
+      socket.on("display_image", (data) => {
+        console.log("Received display_image event:", data);
+
+        const radargramImage = document.getElementById("radargram-image");
+        const errorMessage = document.getElementById("error-message");
+
+        if (data.error) {
+          console.error("Error:", data.error);
+          errorMessage.textContent = data.error;
+          radargramImage.style.display = "none";
+        } else if (data.image_url) {
+          console.log("Adding detection marker at position:", roverX, roverY);
+
+          // Add a red tile to the trail path if detection occurs
+          if (data.check === 1) {
+            const redTile = document.createElement("div");
+            redTile.classList.add("red-tile");
+            redTile.style.top = `${roverY}px`;
+            redTile.style.left = `${roverX}px`;
+            map.appendChild(redTile);
+          }
+
+          // Ensure the rover image remains separate from the trail markers
+          roverSymbol.style.backgroundImage = `url(${droneURL})`;
+
+          // Update radargram image separately
+          radargramImage.src = data.image_url;
+          radargramImage.style.display = "block";
+          errorMessage.textContent = "";
+        }
+      });
+    </script>
+  </body>
+</html>

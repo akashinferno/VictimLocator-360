@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Check</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+      // Connect to WebSocket
+      const host = window.location.hostname;
+      const port = 5000; // Change to the desired port
+      const protocol = window.location.protocol;
+      const serverURL = `${protocol}//${host}:${port}`;
+      console.log(`Connecting to Socket.IO server at: ${serverURL}`);
+      const socket = io.connect(serverURL);
+
+      socket.on("connect", () => {
+        console.log("Successfully connected to the Socket.IO server.");
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("Connection error:", error);
+      });
+
+      socket.on("disconnect", () => {
+        console.warn("Disconnected from the Socket.IO server.");
+      });
+
+      function sendCheck(value) {
+        console.log(`Button clicked with value: ${value}`);
+        console.log("Emitting 'check' event to the server...");
+        socket.emit("check", value);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Check Buttons</h1>
+    <button
+      style="background-color: black; color: white; width: 200px; height: 100px"
+      onclick="sendCheck(1)"
+    >
+      Check 1
+    </button>
+    <button
+      style="background-color: black; color: white; width: 200px; height: 100px"
+      onclick="sendCheck(0)"
+    >
+      Check 0
+    </button>
+  </body>
+</html>

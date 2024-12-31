@@ -103,6 +103,67 @@
             border-radius: 10px; /* Rounded corners */
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
         }
+		
+.toggle-buttons {
+    position: fixed; /* Fixes the position to stay at the bottom */
+    bottom: 85px; /* Distance from the bottom of the viewport */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust to center */
+    z-index: 1000; /* Ensure it is on top of other elements */
+}
+
+.toggle-buttons button {
+    padding: 10px 20px; /* Comfortable padding */
+    font-size: 16px; /* Text size */
+    font-weight: bold; /* Bold text for emphasis */
+    color: white; /* White text for contrast */
+    background-color: #007BFF; /* Blue background */
+    border: 2px solid #0056b3; /* Slightly darker blue border */
+    border-radius: 8px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 0px 4px 6px rgba(0, 123, 255, 0.2); /* Subtle shadow for depth */
+    transition: all 0.3s ease; /* Smooth transition effect */
+}
+
+/* Hover Effect */
+.toggle-buttons button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Active/Pressed Effect */
+.toggle-buttons button:active {
+    background-color: #003f7f; /* Even darker blue on click */
+    transform: translateY(2px); /* Pressed-in effect */
+    box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Reduced shadow */
+}
+
+.toggle-buttons .thermal-toggle {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    border: 2px solid #007BFF; /* Blue border */
+    border-radius: 8px; /* Rounded corners for a modern look */
+    background-color: #007BFF; /* Bright Blue background */
+    color: white; /* White text for visibility */
+    font-weight: bold; /* Slightly bolder text */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: all 0.3s ease; /* Smooth transition effect */
+    box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
+}
+
+.toggle-buttons .thermal-toggle:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
+    transform: translateY(-2px); /* Lift effect */
+}
+
+.toggle-buttons .thermal-toggle:active {
+    background-color: #003f7f; /* Even darker blue when clicked */
+    transform: translateY(2px); /* Pressed effect */
+    box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Shadow shrink on click */
+}
 
         .live-location img {
             width: 65%;
@@ -216,6 +277,29 @@
     background-color: #0056b3; /* Darker blue on hover */
 }
 
+.cam-mode-button {
+    position: fixed; /* Stays in place even when scrolling */
+    bottom: 180px; /* Positioned above the btn-control button (adjusted distance) */
+    right: 20px; /* Aligns with the btn-control button */
+    padding: 21px 29px; /* Adds space inside the button */
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text color */
+    border: none; /* Removes border */
+    border-radius: 5px; /* Slightly rounded corners */
+    font-size: 16px; /* Adjust font size */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.cam-mode-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
+
+
+
 #sensorBox {
             position: absolute;
             top: 50px;
@@ -290,6 +374,9 @@
         <p><strong>Please rotate your device to landscape mode</strong></p>
         <p>The app is optimized for landscape view.</p>
     </div>
+	<div class="toggle-buttons" style="text-align: center; margin: 20px;">
+        <button id="toggle-thermal" onclick="toggleThermal()">Thermal Filter: Off</button>
+    </div>
 
     <!-- Main Content -->
     <div class="app-content">
@@ -304,6 +391,16 @@
             <h1>Live Location</h1>
             <img src="/static/location-map.jpg" alt="Live Location Feed">
         </div>
+		
+		<div class="app-content">
+		
+		<!-- Toggle Buttons -->
+        <div class="toggle-buttons" style="position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%);">
+            <button id="toggle-camera" onclick="toggleCamera()">Live Camera</button>
+            <button id="toggle-location" onclick="toggleLocation()">Live Location</button>
+            <button id="toggle-sensors" onclick="toggleSensors()">Sensor Data</button>
+        </div>
+        
         
         <!-- Sensor Box -->
         <div id="sensorBox" style="position: absolute; top: -1px; left: 50px;">
@@ -330,7 +427,13 @@
  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 <script>
  // Connect to WebSocket
- const socket = io.connect('http://localhost:5000');
+const host = window.location.hostname; 
+const port = 5000; // Change to the desired port 
+const protocol = window.location.protocol; 
+const serverURL = `${protocol}//${host}:${port}`; 
+const socket = io.connect(serverURL);
+
+//  const socket = io.connect('http://192.168.0.197:5000');
 
 // Listen for 'sensor_reading' event
 socket.on('sensor_reading', function(data) {
@@ -375,6 +478,70 @@ socket.on('sensor_reading', function(data) {
 
            
         </script>
+		
+		<script>
+    function toggleCamera() {
+        const cameraSection = document.querySelector('.live-cam');
+        cameraSection.style.display = cameraSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleLocation() {
+        const locationSection = document.querySelector('.live-location');
+        locationSection.style.display = locationSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleSensors() {
+        const sensorBox = document.getElementById('sensorBox');
+        sensorBox.style.display = sensorBox.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+		<script>
+                    // Default thermal state
+        let isThermalOn = false;
+
+        // Function to toggle the thermal state
+        function toggleThermal() {
+            isThermalOn = !isThermalOn;
+
+            // Update button text based on the state
+            const button = document.getElementById("toggle-thermal");
+            button.textContent = isThermalOn ? "Thermal Filter: On" : "Thermal Filter: Off";
+
+            // Emit the thermal state through socket.io
+            socket.emit('thermal', isThermalOn);
+
+        }
+            /*
+        let isThermalOn = false; // Default state of the thermal filter
+    
+        // Toggle the thermal filter
+        function toggleThermal() {
+            fetch('/toggle_thermal', { method: 'POST' }) // Call the backend toggle route
+                .then(response => response.json())
+                .then(data => {
+                    isThermalOn = data.thermal_filter_enabled; // Update state based on server response
+                    document.getElementById('toggle-thermal').textContent = `Thermal Filter: ${isThermalOn ? 'On' : 'Off'}`;
+                    updateCameraFeed(); // Refresh the camera feed
+                })
+                .catch(error => console.error('Error toggling thermal filter:', error));
+        }
+    
+        // Update the live camera feed based on the thermal filter state
+        function updateCameraFeed() {
+            const feedUrl = isThermalOn ? '/live_feed?thermal=true' : '/live_feed?thermal=false';
+            document.getElementById("live-cam-feed").src = feedUrl;
+        }
+    
+        // Initialize the live camera feed on page load
+        function startCameraFeed() {
+            updateCameraFeed(); // Load the default feed without the thermal filter
+        }
+    
+        // Trigger camera feed initialization when the page loads
+        window.onload = startCameraFeed;
+        */ 
+    </script>
 
         <!-- Mode Control Buttons -->
         <!-- 
@@ -423,6 +590,8 @@ socket.on('sensor_reading', function(data) {
         </div>
 
         <button class="btn-control" onclick="toggleGear()">Gear: <span id="gear-display">D</span></button>
+        <button class="cam-mode-button" onclick="toggleCameraMode()">Camera Mode: <span id="camera-mode-display">rover</span></button>
+        
     
     </div>
 
@@ -431,11 +600,11 @@ socket.on('sensor_reading', function(data) {
         // const socket = io.connect('http://localhost:5000');
 
         function startCameraFeed(ipAddress) {
-            const cameraUrl = `http://${ipAddress}/video`; 
+            const cameraUrl = `${window.location.protocol}//${window.location.host}/video_feed`; 
             document.getElementById("live-cam-feed").src = cameraUrl;
         }
 
-        const ipCameraAddress = "192.168.29.99:8080";
+        const ipCameraAddress = "rtsp://192.168.0.224:8080/h264_ulaw.sdp"
         startCameraFeed(ipCameraAddress);
 
         function controlPower(state) {
@@ -483,16 +652,20 @@ socket.on('sensor_reading', function(data) {
         
         let gear = "D"; // Default gear
 
-        // function controlCar(action) {
-        //     console.log(`mode: ${action}`);
-        //     socket.emit('control_mode', { action });
-        // }
-
         function toggleGear() {
             gear = gear === "D" ? "R" : "D"; // Toggle between Drive and Reverse
             document.getElementById('gear-display').innerText = gear;
             console.log(`Gear toggled to: ${gear}`);
             socket.emit('control_mode', {gear: gear });
+        }
+
+        let cameraMode = "rover"; // Default camera mode
+
+        function toggleCameraMode() {
+            cameraMode = cameraMode === "rover" ? "drone" : "rover"; // Toggle between Drone and Rover
+            document.getElementById('camera-mode-display').innerText = cameraMode;
+            console.log(`Camera mode toggled to: ${cameraMode}`);
+            socket.emit('camera_mode', { cameraMode: cameraMode }); // Emit camera mode
         }
     
 
