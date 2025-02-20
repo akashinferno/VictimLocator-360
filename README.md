@@ -9,6 +9,9 @@ VL360 represents a comprehensive solution aimed at supporting rescue teams in cr
  - ### Real-Time Data Transmission
     The system is equipped with capabilities for continuous real-time data transmission. This feature ensures that rescue teams receive immediate, actionable information, which is essential for reducing response times during emergencies.
 
+ - ### Edge Computing for Fast Processing
+    The system integrates edge computing technology, allowing data processing to occur directly on the device rather than relying solely on cloud computing. This ensures rapid decision-making and reduces latency, making VL360 highly efficient in time-sensitive rescue missions.
+
  -  ### Human Body Detection
     Leveraging advanced AI algorithms, VL360 is designed to accurately detect human presence within collapsed structures. This functionality is critical in ensuring that no potential survivors are overlooked during search operations.
 
