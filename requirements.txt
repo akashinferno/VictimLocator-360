@@ -1,0 +1,9 @@
+Flask
+flask-cors
+Flask-SocketIO
+matplotlib
+numpy
+opencv-python
+pytz
+torch
+eventlet
