@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 #cap = cv2.VideoCapture('http://192.168.29.99:8080/video')
 
-RTSP_URL = "rtsp://192.168.0.224:8080/h264_ulaw.sdp" 
+RTSP_URL = "rtsp://192.168.218.34:8080/h264_ulaw.sdp" 
 #RTSP_URL = "rtsp://192.168.0.10:554/avstream/channel=1/stream=1.sdp" 
 
 # Load YOLOv5 model
@@ -776,6 +776,28 @@ def get_camera_mode():
     global camera_mode
     """API endpoint to return the current camera mode."""
     return jsonify({'camera_mode': camera_mode})
+
+
+# new:
+location_data = {"latitude": None, "longitude": None}
+
+@app.route('/map')
+def gmap():
+    return render_template('map.html')
+
+@app.route('/update_location', methods=['POST'])
+def update_location():
+    global location_data
+    data = request.get_json()
+    location_data["latitude"] = data.get('latitude')
+    location_data["longitude"] = data.get('longitude')
+    print(f"Received Location: {location_data}")
+    return jsonify({'status': 'success'})
+
+@app.route('/get_location')
+def get_location():
+    return jsonify(location_data)
+
     
 
 #------------------------------socket-================================

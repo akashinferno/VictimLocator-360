@@ -1,518 +1,598 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Motor Control - Car Layout</title>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.4.1/dist/socket.io.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f0f0;
-            height: 100vh;
-            position: relative;
-        }
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 0;
+                  display: flex;
+                  flex-direction: column;
+                  background-color: #f0f0f0;
+                  height: 100vh;
+                  position: relative;
+              }
 
-        /* Add a landscape warning overlay */
-        .landscape-warning {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            font-size: calc(1.5rem + 1vw);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            opacity: 0;
-            transition: opacity 0.5s, filter 0.5s;
-        }
+              /* Add a landscape warning overlay */
+              .landscape-warning {
+                  display: none;
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background-color: rgba(0, 0, 0, 0.8);
+                  color: white;
+                  font-size: calc(1.5rem + 1vw);
+                  z-index: 1000;
+                  justify-content: center;
+                  align-items: center;
+                  text-align: center;
+                  padding: 20px;
+                  opacity: 0;
+                  transition: opacity 0.5s, filter 0.5s;
+              }
 
-        .landscape-warning p {
-            font-size: calc(1.5rem + 0.5vw);
-            margin-top: 10px;
-        }
+              .landscape-warning p {
+                  font-size: calc(1.5rem + 0.5vw);
+                  margin-top: 10px;
+              }
 
-        .landscape-warning p strong {
-            font-size: calc(1.8rem + 0.5vw);
-        }
+              .landscape-warning p strong {
+                  font-size: calc(1.8rem + 0.5vw);
+              }
 
-        /* Live Cam Section */
-            .live-cam {
-        width: 50%; /* Adjust the container size */
-        height: 40vh; /* Smaller height */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #333;
-        color: #fff;
-        position: absolute;
-        top: 31%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 19px;
-        overflow: hidden; /* Ensure no part of the image overflows */
-    }
+              /* Live Cam Section */
+                  .live-cam {
+              width: 50%; /* Adjust the container size */
+              height: 40vh; /* Smaller height */
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: #333;
+              color: #fff;
+              position: absolute;
+              top: 31%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              border-radius: 19px;
+              overflow: hidden; /* Ensure no part of the image overflows */
+          }
 
-    .live-cam img {
-        position: absolute; /* Keep image independent of the container size */
-        top: 0;
-        left: 0;
-        width: 100%; /* Keep full width */
-        height: 100%; /* Keep full height */
-        object-fit: cover; /* Maintain aspect ratio and fill the container */
-        border-radius: 10px;
-    }
+          .live-cam img {
+              position: absolute; /* Keep image independent of the container size */
+              top: 0;
+              left: 0;
+              width: 100%; /* Keep full width */
+              height: 100%; /* Keep full height */
+              object-fit: cover; /* Maintain aspect ratio and fill the container */
+              border-radius: 10px;
+          }
 
-    
 
-    .live-cam h1 {
-    margin-bottom: 10px;
-    font-size: 24px;
-    background-color: rgba(0, 0, 0, 0.6); /* Black background with slight transparency */
-    color: white; /* White text color */
-    padding: 5px 10px; /* Add some padding around the text */
-    border-radius: 5px; /* Optional: rounded corners for the background */
-    position: absolute; /* Position it over the camera feed */
-    top: 10px; /* Distance from the top of the live cam section */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Adjust for centering */
-    z-index: 10; 
-}
-        /* Live Location Section */
-        .live-location {
-            height: 300px; /* Height of the live location box */
-            width: 328px;  /* Width of the live location box */
-            position: absolute; /* Position to allow for precise placement */
-            top: 20px; /* Distance from the top of the screen */
-            right: 20px; /* Distance from the right side of the screen */
-            padding: 10px; /* Padding inside the box */
-            text-align: center; /* Center text alignment */
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-            color: white; /* White text color */
-            z-index: 10; /* Ensure it appears above other elements */
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-        }
-		
-.toggle-buttons {
-    position: fixed; /* Fixes the position to stay at the bottom */
-    bottom: 85px; /* Distance from the bottom of the viewport */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Adjust to center */
-    z-index: 1000; /* Ensure it is on top of other elements */
-}
 
-.toggle-buttons button {
-    padding: 10px 20px; /* Comfortable padding */
-    font-size: 16px; /* Text size */
-    font-weight: bold; /* Bold text for emphasis */
-    color: white; /* White text for contrast */
-    background-color: #007BFF; /* Blue background */
-    border: 2px solid #0056b3; /* Slightly darker blue border */
-    border-radius: 8px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    box-shadow: 0px 4px 6px rgba(0, 123, 255, 0.2); /* Subtle shadow for depth */
-    transition: all 0.3s ease; /* Smooth transition effect */
-}
-
-/* Hover Effect */
-.toggle-buttons button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-    box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
-    transform: translateY(-2px); /* Slight lift effect */
-}
-
-/* Active/Pressed Effect */
-.toggle-buttons button:active {
-    background-color: #003f7f; /* Even darker blue on click */
-    transform: translateY(2px); /* Pressed-in effect */
-    box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Reduced shadow */
-}
-
-.toggle-buttons .thermal-toggle {
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 16px;
-    border: 2px solid #007BFF; /* Blue border */
-    border-radius: 8px; /* Rounded corners for a modern look */
-    background-color: #007BFF; /* Bright Blue background */
-    color: white; /* White text for visibility */
-    font-weight: bold; /* Slightly bolder text */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: all 0.3s ease; /* Smooth transition effect */
-    box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
-}
-
-.toggle-buttons .thermal-toggle:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-    box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
-    transform: translateY(-2px); /* Lift effect */
-}
-
-.toggle-buttons .thermal-toggle:active {
-    background-color: #003f7f; /* Even darker blue when clicked */
-    transform: translateY(2px); /* Pressed effect */
-    box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Shadow shrink on click */
-}
-
-        .live-location img {
-            width: 65%;
-            height: 62%;
-            object-fit: cover;
-        }
-
-        /* Buttons and Controls */
-        .control-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .power-buttons, .mode-buttons, .direction-buttons {
-            display: flex;
-            gap: 20px;
-        }
-
-        button {
-            padding: 20px 30px;
-            font-size: 18px;
-            cursor: pointer;
-            border: none;
-            border-radius: 10px;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.1);
-        }
-
-        .btn-on {
-            background-color: #28A745;
-            color: white;
-        }
-
-        .btn-off {
-            background-color: #DC3545;
-            color: white;
-        }
-
-        .btn-accelerate, .btn-brake, .btn-right, .btn-left {
-            background-color: #6C757D;
-            color: white;
-        }
-
-        .btn-2wheel, .btn-4wheel {
-            background-color: #007BFF;
-            color: white;
-        }
-
-        .direction-buttons-left {
+          .live-cam h1 {
+          margin-bottom: 10px;
+          font-size: 24px;
+          background-color: rgba(0, 0, 0, 0.6); /* Black background with slight transparency */
+          color: white; /* White text color */
+          padding: 5px 10px; /* Add some padding around the text */
+          border-radius: 5px; /* Optional: rounded corners for the background */
+          position: absolute; /* Position it over the camera feed */
+          top: 10px; /* Distance from the top of the live cam section */
+          left: 50%; /* Center horizontally */
+          transform: translateX(-50%); /* Adjust for centering */
+          z-index: 10;
+      }
+              /* Live Location Section */
+              .live-location {
+            height: 471px;
+            width: 450px;
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            display: flex;
-            gap: 20px;
-            flex-direction: column;
-        }
-
-        .direction-buttons-right {
-            position: absolute;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
-            display: flex;
-            gap: 20px;
-            flex-direction: row;
-        }
-
-        .mode-buttons {
-            position: absolute;
-            bottom: 100px;
-            display: flex;
-            gap: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .power-buttons {
-            position: absolute;
-            bottom: 40px;
-            display: flex;
-            gap: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* Blur effect for background when in portrait mode */
-        .blur-background {
-            filter: blur(10px);
-        }
-        .btn-control {
-            position: fixed; /* Ensures the button stays in place even when scrolling */
-            bottom: 110px; /* Distance from the bottom of the screen */
-            right: 20px; /* Distance from the right side of the screen */
-            padding: 21px 29px; /* Adds space inside the button */
-            background-color: #007bff; /* Blue background */
-            color: white; /* White text color */
-            border: none; /* Removes border */
-            border-radius: 5px; /* Slightly rounded corners */
-            font-size: 16px; /* Adjust font size */
-            cursor: pointer; /* Changes cursor to pointer on hover */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
-            transition: background-color 0.3s ease; /* Smooth hover effect */
-}
-
-.btn-control:hover { 
-    background-color: #0056b3; /* Darker blue on hover */
-}
-
-.cam-mode-button {
-    position: fixed; /* Stays in place even when scrolling */
-    bottom: 180px; /* Positioned above the btn-control button (adjusted distance) */
-    right: 20px; /* Aligns with the btn-control button */
-    padding: 21px 29px; /* Adds space inside the button */
-    background-color: #007bff; /* Blue background */
-    color: white; /* White text color */
-    border: none; /* Removes border */
-    border-radius: 5px; /* Slightly rounded corners */
-    font-size: 16px; /* Adjust font size */
-    cursor: pointer; /* Changes cursor to pointer on hover */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-}
-
-.cam-mode-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-}
-
-
-
-
-
-#sensorBox {
-            position: absolute;
-            top: 50px;
-            left: 50px;
-            width: 370px; /* Adjust to fit the screen */
-            max-height: 400px; /* Limit the height */
-            overflow-y: auto; /* Allow scrolling when content exceeds max height */
-            
-        }
-
-        #sensorBox table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #sensorBox th, #sensorBox td {
-            padding: 8px; /* Added padding for better spacing */
-            border: 1px solid #007bff;
+            padding: 10px;
             text-align: center;
-        }
-
-        #sensorBox th {
-            background-color: #007bff;
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
+            z-index: 10;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        #sensorBox td {
-            background-color: #f9f9f9;
-            word-wrap: break-word; /* Ensures text doesn't overflow */
+        #map {
+            width: 100%;
+            height: 80%; /* Adjusted height to fit inside box */
+            border-radius: 8px;
         }
 
-        #sensorBox tr:nth-child(even) td {
-            background-color: #f1f1f1;
+        #location {
+            font-size: 14px;
         }
+      .toggle-buttons {
+          position: fixed; /* Fixes the position to stay at the bottom */
+          bottom: 85px; /* Distance from the bottom of the viewport */
+          left: 50%; /* Center horizontally */
+          transform: translateX(-50%); /* Adjust to center */
+          z-index: 1000; /* Ensure it is on top of other elements */
+      }
 
-        #sensorBox tr:hover td {
-            background-color: #e0e0e0;
-        }
+      .toggle-buttons button {
+          padding: 10px 20px; /* Comfortable padding */
+          font-size: 16px; /* Text size */
+          font-weight: bold; /* Bold text for emphasis */
+          color: white; /* White text for contrast */
+          background-color: #007BFF; /* Blue background */
+          border: 2px solid #0056b3; /* Slightly darker blue border */
+          border-radius: 8px; /* Rounded corners */
+          cursor: pointer; /* Pointer cursor on hover */
+          box-shadow: 0px 4px 6px rgba(0, 123, 255, 0.2); /* Subtle shadow for depth */
+          transition: all 0.3s ease; /* Smooth transition effect */
+      }
 
-        #sensorBox td:nth-child(1) {
-            width: 40%; /* Adjust the width of the sensor name column */
-        }
+      /* Hover Effect */
+      .toggle-buttons button:hover {
+          background-color: #0056b3; /* Darker blue on hover */
+          box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
+          transform: translateY(-2px); /* Slight lift effect */
+      }
 
-        #sensorBox td:nth-child(2) {
-            width: 30%; /* Adjust the width of the value column */
-        }
+      /* Active/Pressed Effect */
+      .toggle-buttons button:active {
+          background-color: #003f7f; /* Even darker blue on click */
+          transform: translateY(2px); /* Pressed-in effect */
+          box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Reduced shadow */
+      }
 
-        #sensorBox td:nth-child(3) {
-            width: 30%; /* Adjust the width of the timestamp column */
-        }
+      .toggle-buttons .thermal-toggle {
+          padding: 10px 20px;
+          margin: 10px;
+          font-size: 16px;
+          border: 2px solid #007BFF; /* Blue border */
+          border-radius: 8px; /* Rounded corners for a modern look */
+          background-color: #007BFF; /* Bright Blue background */
+          color: white; /* White text for visibility */
+          font-weight: bold; /* Slightly bolder text */
+          cursor: pointer; /* Pointer cursor on hover */
+          transition: all 0.3s ease; /* Smooth transition effect */
+          box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
+      }
 
-        #sensorData {
-            display: block;
-            max-height: 300px; /* Adjust based on your screen size */
-            overflow-y: auto; /* Make the table scrollable */
-        }
+      .toggle-buttons .thermal-toggle:hover {
+          background-color: #0056b3; /* Darker blue on hover */
+          box-shadow: 0px 6px 12px rgba(0, 86, 179, 0.3); /* Enhanced shadow on hover */
+          transform: translateY(-2px); /* Lift effect */
+      }
 
-        #sensorTable td, #sensorTable th {
-            height: 40px;  /* Adjust as needed */
-            overflow: hidden;
-        }
+      .toggle-buttons .thermal-toggle:active {
+          background-color: #003f7f; /* Even darker blue when clicked */
+          transform: translateY(2px); /* Pressed effect */
+          box-shadow: 0px 2px 4px rgba(0, 63, 127, 0.2); /* Shadow shrink on click */
+      }
+
+              .live-location img {
+                  width: 65%;
+                  height: 62%;
+                  object-fit: cover;
+              }
+
+              /* Buttons and Controls */
+              .control-panel {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 20px 0;
+              }
+
+              .power-buttons, .mode-buttons, .direction-buttons {
+                  display: flex;
+                  gap: 20px;
+              }
+
+              button {
+                  padding: 20px 30px;
+                  font-size: 18px;
+                  cursor: pointer;
+                  border: none;
+                  border-radius: 10px;
+                  transition: 0.3s;
+              }
+
+              button:hover {
+                  transform: scale(1.1);
+              }
+
+              .btn-on {
+                  background-color: #28A745;
+                  color: white;
+              }
+
+              .btn-off {
+                  background-color: #DC3545;
+                  color: white;
+              }
+
+              .btn-accelerate, .btn-brake, .btn-right, .btn-left {
+                  background-color: #6C757D;
+                  color: white;
+              }
+
+              .btn-2wheel, .btn-4wheel {
+                  background-color: #007BFF;
+                  color: white;
+              }
+
+              .direction-buttons-left {
+                  position: absolute;
+                  bottom: 20px;
+                  left: 20px;
+                  display: flex;
+                  gap: 20px;
+                  flex-direction: column;
+              }
+
+              .direction-buttons-right {
+                  position: absolute;
+                  bottom: 20px;
+                  right: 20px;
+                  display: flex;
+                  gap: 20px;
+                  flex-direction: row;
+              }
+
+              .mode-buttons {
+                  position: absolute;
+                  bottom: 100px;
+                  display: flex;
+                  gap: 6px;
+                  left: 50%;
+                  transform: translateX(-50%);
+              }
+
+              .power-buttons {
+                  position: absolute;
+                  bottom: 40px;
+                  display: flex;
+                  gap: 20px;
+                  left: 50%;
+                  transform: translateX(-50%);
+              }
+
+              /* Blur effect for background when in portrait mode */
+              .blur-background {
+                  filter: blur(10px);
+              }
+              .btn-control {
+                  position: fixed; /* Ensures the button stays in place even when scrolling */
+                  bottom: 110px; /* Distance from the bottom of the screen */
+                  right: 20px; /* Distance from the right side of the screen */
+                  padding: 21px 29px; /* Adds space inside the button */
+                  background-color: #007bff; /* Blue background */
+                  color: white; /* White text color */
+                  border: none; /* Removes border */
+                  border-radius: 5px; /* Slightly rounded corners */
+                  font-size: 16px; /* Adjust font size */
+                  cursor: pointer; /* Changes cursor to pointer on hover */
+                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+                  transition: background-color 0.3s ease; /* Smooth hover effect */
+      }
+
+      .btn-control:hover {
+          background-color: #0056b3; /* Darker blue on hover */
+      }
+
+      .cam-mode-button {
+          position: fixed; /* Stays in place even when scrolling */
+          bottom: 180px; /* Positioned above the btn-control button (adjusted distance) */
+          right: 20px; /* Aligns with the btn-control button */
+          padding: 21px 29px; /* Adds space inside the button */
+          background-color: #007bff; /* Blue background */
+          color: white; /* White text color */
+          border: none; /* Removes border */
+          border-radius: 5px; /* Slightly rounded corners */
+          font-size: 16px; /* Adjust font size */
+          cursor: pointer; /* Changes cursor to pointer on hover */
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+          transition: background-color 0.3s ease; /* Smooth hover effect */
+      }
+
+      .cam-mode-button:hover {
+          background-color: #0056b3; /* Darker blue on hover */
+      }
 
 
 
 
-</style>
-    
-</head>
-<body>
+
+      #sensorBox {
+                  position: absolute;
+                  top: 50px;
+                  left: 50px;
+                  width: 370px; /* Adjust to fit the screen */
+                  max-height: 400px; /* Limit the height */
+                  overflow-y: auto; /* Allow scrolling when content exceeds max height */
+
+              }
+
+              #sensorBox table {
+                  width: 100%;
+                  border-collapse: collapse;
+              }
+
+              #sensorBox th, #sensorBox td {
+                  padding: 8px; /* Added padding for better spacing */
+                  border: 1px solid #007bff;
+                  text-align: center;
+              }
+
+              #sensorBox th {
+                  background-color: #007bff;
+                  color: white;
+              }
+
+              #sensorBox td {
+                  background-color: #f9f9f9;
+                  word-wrap: break-word; /* Ensures text doesn't overflow */
+              }
+
+              #sensorBox tr:nth-child(even) td {
+                  background-color: #f1f1f1;
+              }
+
+              #sensorBox tr:hover td {
+                  background-color: #e0e0e0;
+              }
+
+              #sensorBox td:nth-child(1) {
+                  width: 40%; /* Adjust the width of the sensor name column */
+              }
+
+              #sensorBox td:nth-child(2) {
+                  width: 30%; /* Adjust the width of the value column */
+              }
+
+              #sensorBox td:nth-child(3) {
+                  width: 30%; /* Adjust the width of the timestamp column */
+              }
+
+              #sensorData {
+                  display: block;
+                  max-height: 300px; /* Adjust based on your screen size */
+                  overflow-y: auto; /* Make the table scrollable */
+              }
+
+              #sensorTable td, #sensorTable th {
+                  height: 40px;  /* Adjust as needed */
+                  overflow: hidden;
+              }
+    </style>
+  </head>
+  <body>
     <!-- Landscape Warning -->
     <div class="landscape-warning" id="landscapeWarning">
-        <p><strong>Please rotate your device to landscape mode</strong></p>
-        <p>The app is optimized for landscape view.</p>
+      <p><strong>Please rotate your device to landscape mode</strong></p>
+      <p>The app is optimized for landscape view.</p>
     </div>
-	<div class="toggle-buttons" style="text-align: center; margin: 20px;">
-        <button id="toggle-thermal" onclick="toggleThermal()">Thermal Filter: Off</button>
+    <div class="toggle-buttons" style="text-align: center; margin: 20px">
+      <button id="toggle-thermal" onclick="toggleThermal()">
+        Thermal Filter: Off
+      </button>
     </div>
 
     <!-- Main Content -->
     <div class="app-content">
-        <!-- Live Cam Section -->
-        <div class="live-cam">
-            <h1>Live Cam</h1>
-            <img id="live-cam-feed" src="/static/iStockMac99-186876633-696x392.jpg" alt="Live Camera Feed">
-        </div>
+      <!-- Live Cam Section -->
+      <div class="live-cam">
+        <h1>Live Cam</h1>
+        <img
+          id="live-cam-feed"
+          src="/static/iStockMac99-186876633-696x392.jpg"
+          alt="Live Camera Feed"
+        />
+      </div>
 
-        <!-- Live Location -->
-        <div class="live-location">
-            <h1>Live Location</h1>
-            <img src="/static/location-map.jpg" alt="Live Location Feed">
-        </div>
-		
-		<div class="app-content">
-		
-		<!-- Toggle Buttons -->
-        <div class="toggle-buttons" style="position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%);">
-            <button id="toggle-camera" onclick="toggleCamera()">Live Camera</button>
-            <button id="toggle-location" onclick="toggleLocation()">Live Location</button>
-            <button id="toggle-sensors" onclick="toggleSensors()">Sensor Data</button>
-        </div>
-        
-        
-        <!-- Sensor Box -->
-        <div id="sensorBox" style="position: absolute; top: -1px; left: 50px;">
-            <h1>Real-Time Sensor Data</h1>
-            <table id="sensorTable">
-                <tbody id="sensorData">
-                    <!-- Add column-specific headings -->
-                    <tr>
-                        <td style="text-align: center; font-weight: bold;">Sensor Name</td>
-                        <td style="text-align: center; font-weight: bold;">Value</td>
-                        <td style="text-align: center; font-weight: bold;">Timestamp</td>
-                    </tr>
-                    <!-- Placeholder row -->
-                    <tr id="placeholderRow">
-                        <td colspan="3">Waiting for data...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
+      <!-- Live Location -->
+      <div class="live-location">
+        <h1>Live Location</h1>
+        <p id="location">Waiting for location...</p>
+        <iframe
+          id="map"
+          width="600"
+          height="450"
+          style="border: 0"
+          allowfullscreen=""
+          loading="lazy"
+        ></iframe>
+      </div>
 
+      <div class="app-content">
+        <!-- Other content goes here -->
+      </div>
 
+      <script>
+        let prevLat = null;
+        let prevLon = null;
 
- <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
-<script>
- // Connect to WebSocket
-const host = window.location.hostname; 
-const port = 5000; // Change to the desired port 
-const protocol = window.location.protocol; 
-const serverURL = `${protocol}//${host}:${port}`; 
-const socket = io.connect(serverURL);
+        function sendLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+              function (position) {
+                let lat = position.coords.latitude;
+                let lon = position.coords.longitude;
 
-//  const socket = io.connect('http://192.168.0.197:5000');
+                // Only update if location changes
+                if (lat !== prevLat || lon !== prevLon) {
+                  prevLat = lat;
+                  prevLon = lon;
 
-// Listen for 'sensor_reading' event
-socket.on('sensor_reading', function(data) {
-    console.log('Received sensor data:', data);
+                  document.getElementById(
+                    "location"
+                  ).innerText = `Latitude: ${lat}, Longitude: ${lon}`;
+                  document.getElementById(
+                    "map"
+                  ).src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
 
-    const sensorDataTable = document.getElementById('sensorData');
-    const placeholderRow = document.getElementById('placeholderRow');
+                  fetch("/update_location", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ latitude: lat, longitude: lon }),
+                  });
+                }
+              },
+              function (error) {
+                console.error("Location access denied:", error);
+                document.getElementById("location").innerText =
+                  "Unable to fetch location.";
+              }
+            );
+          } else {
+            alert("Geolocation is not supported on this device.");
+          }
+        }
 
-    // Remove the placeholder row if data is received
-    if (placeholderRow) {
-        placeholderRow.remove();
-    }
+        sendLocation();
+      </script>
 
-    // Clear existing rows except for the column headings
-    const columnHeadingRow = sensorDataTable.querySelector("tr:first-child");
-    sensorDataTable.innerHTML = "";
+      <!-- Toggle Buttons -->
+      <div
+        class="toggle-buttons"
+        style="
+          position: absolute;
+          bottom: 160px;
+          left: 50%;
+          transform: translateX(-50%);
+        "
+      >
+        <button id="toggle-camera" onclick="toggleCamera()">Live Camera</button>
+        <button id="toggle-location" onclick="toggleLocation()">
+          Live Location
+        </button>
+        <button id="toggle-sensors" onclick="toggleSensors()">
+          Sensor Data
+        </button>
+      </div>
 
-    // Re-add the column-specific headings
-    if (columnHeadingRow) sensorDataTable.appendChild(columnHeadingRow);
+      <!-- Sensor Box -->
+      <div id="sensorBox" style="position: absolute; top: -1px; left: 50px">
+        <h1>Real-Time Sensor Data</h1>
+        <table id="sensorTable">
+          <tbody id="sensorData">
+            <!-- Add column-specific headings -->
+            <tr>
+              <td style="text-align: center; font-weight: bold">Sensor Name</td>
+              <td style="text-align: center; font-weight: bold">Value</td>
+              <td style="text-align: center; font-weight: bold">Timestamp</td>
+            </tr>
+            <!-- Placeholder row -->
+            <tr id="placeholderRow">
+              <td colspan="3">Waiting for data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    // Create a new row for the sensor data
-    const row = document.createElement('tr');
+      <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+      <script>
+        // Connect to WebSocket
+        const host = window.location.hostname;
+        const port = 5000; // Change to the desired port
+        const protocol = window.location.protocol;
+        const serverURL = `${protocol}//${host}:${port}`;
+        const socket = io.connect(serverURL);
 
-    // Create and append the sensor name cell
-    const sensorNameCell = document.createElement('td');
-    sensorNameCell.textContent = data.sensor_name || 'Unknown'; // Default if no sensor_name
-    row.appendChild(sensorNameCell);
+        //  const socket = io.connect('http://192.168.0.197:5000');
 
-    // Create and append the value cell
-    const valueCell = document.createElement('td');
-    valueCell.textContent = data.value || 'N/A'; // Default if no value
-    row.appendChild(valueCell);
+        // Listen for 'sensor_reading' event
+        socket.on("sensor_reading", function (data) {
+          console.log("Received sensor data:", data);
 
-    // Create and append the timestamp cell
-    const timestampCell = document.createElement('td');
-    timestampCell.textContent = data.timestamp || new Date().toLocaleString(); // Default to current time
-    row.appendChild(timestampCell);
+          const sensorDataTable = document.getElementById("sensorData");
+          const placeholderRow = document.getElementById("placeholderRow");
 
-    // Append the new row to the table body
-    sensorDataTable.appendChild(row);
-   });
+          // Remove the placeholder row if data is received
+          if (placeholderRow) {
+            placeholderRow.remove();
+          }
 
-           
-        </script>
-		
-		<script>
-    function toggleCamera() {
-        const cameraSection = document.querySelector('.live-cam');
-        cameraSection.style.display = cameraSection.style.display === 'none' ? 'block' : 'none';
-    }
+          // Clear existing rows except for the column headings
+          const columnHeadingRow =
+            sensorDataTable.querySelector("tr:first-child");
+          sensorDataTable.innerHTML = "";
 
-    function toggleLocation() {
-        const locationSection = document.querySelector('.live-location');
-        locationSection.style.display = locationSection.style.display === 'none' ? 'block' : 'none';
-    }
+          // Re-add the column-specific headings
+          if (columnHeadingRow) sensorDataTable.appendChild(columnHeadingRow);
 
-    function toggleSensors() {
-        const sensorBox = document.getElementById('sensorBox');
-        sensorBox.style.display = sensorBox.style.display === 'none' ? 'block' : 'none';
-    }
-</script>
+          // Create a new row for the sensor data
+          const row = document.createElement("tr");
 
-		<script>
-                    // Default thermal state
+          // Create and append the sensor name cell
+          const sensorNameCell = document.createElement("td");
+          sensorNameCell.textContent = data.sensor_name || "Unknown"; // Default if no sensor_name
+          row.appendChild(sensorNameCell);
+
+          // Create and append the value cell
+          const valueCell = document.createElement("td");
+          valueCell.textContent = data.value || "N/A"; // Default if no value
+          row.appendChild(valueCell);
+
+          // Create and append the timestamp cell
+          const timestampCell = document.createElement("td");
+          timestampCell.textContent =
+            data.timestamp || new Date().toLocaleString(); // Default to current time
+          row.appendChild(timestampCell);
+
+          // Append the new row to the table body
+          sensorDataTable.appendChild(row);
+        });
+      </script>
+
+      <script>
+        function toggleCamera() {
+          const cameraSection = document.querySelector(".live-cam");
+          cameraSection.style.display =
+            cameraSection.style.display === "none" ? "block" : "none";
+        }
+
+        function toggleLocation() {
+          const locationSection = document.querySelector(".live-location");
+          locationSection.style.display =
+            locationSection.style.display === "none" ? "block" : "none";
+        }
+
+        function toggleSensors() {
+          const sensorBox = document.getElementById("sensorBox");
+          sensorBox.style.display =
+            sensorBox.style.display === "none" ? "block" : "none";
+        }
+      </script>
+
+      <script>
+        // Default thermal state
         let isThermalOn = false;
 
         // Function to toggle the thermal state
         function toggleThermal() {
-            isThermalOn = !isThermalOn;
+          isThermalOn = !isThermalOn;
 
-            // Update button text based on the state
-            const button = document.getElementById("toggle-thermal");
-            button.textContent = isThermalOn ? "Thermal Filter: On" : "Thermal Filter: Off";
+          // Update button text based on the state
+          const button = document.getElementById("toggle-thermal");
+          button.textContent = isThermalOn
+            ? "Thermal Filter: On"
+            : "Thermal Filter: Off";
 
-            // Emit the thermal state through socket.io
-            socket.emit('thermal', isThermalOn);
-
+          // Emit the thermal state through socket.io
+          socket.emit("thermal", isThermalOn);
         }
-            /*
+        /*
         let isThermalOn = false; // Default state of the thermal filter
     
         // Toggle the thermal filter
@@ -540,139 +620,146 @@ socket.on('sensor_reading', function(data) {
     
         // Trigger camera feed initialization when the page loads
         window.onload = startCameraFeed;
-        */ 
-    </script>
+        */
+      </script>
 
-        <!-- Mode Control Buttons -->
-        <!-- 
+      <!-- Mode Control Buttons -->
+      <!-- 
         <div class="mode-buttons">
             <button class="btn-2wheel" onclick="controlMode('2wheel')">Two-Wheel Mode</button>
             <button class="btn-4wheel" onclick="controlMode('4wheel')">Four-Wheel Mode</button>
         </div> 
         -->
 
-        <!-- Power Control Buttons -->
-        <div class="power-buttons">
-            <button class="btn-on" onclick="controlPower('on')">Turn On</button>
-            <button class="btn-off" onclick="controlPower('off')">Turn Off</button>
-        </div>
+      <!-- Power Control Buttons -->
+      <div class="power-buttons">
+        <button class="btn-on" onclick="controlPower('on')">Turn On</button>
+        <button class="btn-off" onclick="controlPower('off')">Turn Off</button>
+      </div>
 
-        <!-- Direction Control Buttons -->
-        <div class="direction-buttons-left">
-            <button class="btn-accelerate"
-            onmousedown="controlDirection('accelerate')"
-            onmouseup="controlDirection('brake')"
-            ontouchstart="controlDirection('accelerate')"
-            ontouchend="controlDirection('brake')">
-        Accelerate
+      <!-- Direction Control Buttons -->
+      <div class="direction-buttons-left">
+        <button
+          class="btn-accelerate"
+          onmousedown="controlDirection('accelerate')"
+          onmouseup="controlDirection('brake')"
+          ontouchstart="controlDirection('accelerate')"
+          ontouchend="controlDirection('brake')"
+        >
+          Accelerate
         </button>
 
-            <button class="btn-brake" onclick="controlDirection('brake')">brake</button>
-        </div>
+        <button class="btn-brake" onclick="controlDirection('brake')">
+          brake
+        </button>
+      </div>
 
-        <div class="direction-buttons-right">
-            <button class="btn-left"  onmousedown="controlDirection('left')"
-            onmouseup="controlDirection('brake')"
-            ontouchstart="controlDirection('left')"
-            ontouchend="controlDirection('brake')"> 
-            Left
-            </button>
+      <div class="direction-buttons-right">
+        <button
+          class="btn-left"
+          onmousedown="controlDirection('left')"
+          onmouseup="controlDirection('brake')"
+          ontouchstart="controlDirection('left')"
+          ontouchend="controlDirection('brake')"
+        >
+          Left
+        </button>
 
+        <button
+          class="btn-right"
+          onmousedown="controlDirection('right')"
+          onmouseup="controlDirection('brake')"
+          ontouchstart="controlDirection('right')"
+          ontouchend="controlDirection('brake')"
+        >
+          Right
+        </button>
+      </div>
 
-
-
-            <button class="btn-right" onmousedown="controlDirection('right')"
-            onmouseup="controlDirection('brake')"
-            ontouchstart="controlDirection('right')"
-            ontouchend="controlDirection('brake')"> 
-            Right
-            </button>
-        </div>
-
-        <button class="btn-control" onclick="toggleGear()">Gear: <span id="gear-display">D</span></button>
-        <button class="cam-mode-button" onclick="toggleCameraMode()">Camera Mode: <span id="camera-mode-display">rover</span></button>
-        
-    
+      <button class="btn-control" onclick="toggleGear()">
+        Gear: <span id="gear-display">D</span>
+      </button>
+      <button class="cam-mode-button" onclick="toggleCameraMode()">
+        Camera Mode: <span id="camera-mode-display">rover</span>
+      </button>
     </div>
 
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script> 
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-        // const socket = io.connect('http://localhost:5000');
+      // const socket = io.connect('http://localhost:5000');
 
-        function startCameraFeed(ipAddress) {
-            const cameraUrl = `${window.location.protocol}//${window.location.host}/video_feed`; 
-            document.getElementById("live-cam-feed").src = cameraUrl;
+      function startCameraFeed(ipAddress) {
+        const cameraUrl = `${window.location.protocol}//${window.location.host}/video_feed`;
+        document.getElementById("live-cam-feed").src = cameraUrl;
+      }
+
+      const ipCameraAddress = "rtsp://192.168.0.224:8080/h264_ulaw.sdp";
+      startCameraFeed(ipCameraAddress);
+
+      function controlPower(state) {
+        console.log(`Power: ${state}`);
+        socket.emit("control_power", { state: state });
+      }
+
+      function controlDirection(direction) {
+        console.log(`Moving: ${direction}`);
+        socket.emit("control_direction", { direction: direction });
+      }
+
+      // function controlMode(mode) {
+      //     console.log(`Mode selected: ${mode}`);
+      //     socket.emit('control_mode', { mode: mode });
+      // }
+
+      function handleOrientationChange() {
+        const warning = document.getElementById("landscapeWarning");
+        const appContent = document.querySelector(".app-content");
+
+        warning.style.transition = "opacity 0.5s";
+        appContent.style.transition = "filter 0.5s";
+
+        if (window.innerWidth > window.innerHeight) {
+          warning.style.opacity = "0";
+          setTimeout(() => (warning.style.display = "none"), 500);
+          appContent.classList.remove("blur-background");
+        } else {
+          warning.style.display = "flex";
+          setTimeout(() => (warning.style.opacity = "1"), 0);
+          appContent.classList.add("blur-background");
         }
+      }
 
-        const ipCameraAddress = "rtsp://192.168.0.224:8080/h264_ulaw.sdp"
-        startCameraFeed(ipCameraAddress);
+      function adjustLayout() {
+        const liveCam = document.querySelector(".live-cam");
+        const liveLocation = document.querySelector(".live-location");
+        const viewportHeight = window.innerHeight;
 
-        function controlPower(state) {
-            console.log(`Power: ${state}`);
-            socket.emit('control_power', { state: state });
-        }
+        liveCam.style.height = `${viewportHeight * 0.6}px`;
+        liveLocation.style.height = `${viewportHeight * 0.4}px`;
+      }
 
-        function controlDirection(direction) {
-            console.log(`Moving: ${direction}`);
-            socket.emit('control_direction', { direction: direction });
-        }
+      let gear = "D"; // Default gear
 
-        // function controlMode(mode) {
-        //     console.log(`Mode selected: ${mode}`);
-        //     socket.emit('control_mode', { mode: mode });
-        // }
+      function toggleGear() {
+        gear = gear === "D" ? "R" : "D"; // Toggle between Drive and Reverse
+        document.getElementById("gear-display").innerText = gear;
+        console.log(`Gear toggled to: ${gear}`);
+        socket.emit("control_mode", { gear: gear });
+      }
 
-        function handleOrientationChange() {
-            const warning = document.getElementById('landscapeWarning');
-            const appContent = document.querySelector('.app-content');
+      let cameraMode = "rover"; // Default camera mode
 
-            warning.style.transition = 'opacity 0.5s';
-            appContent.style.transition = 'filter 0.5s';
+      function toggleCameraMode() {
+        cameraMode = cameraMode === "rover" ? "drone" : "rover"; // Toggle between Drone and Rover
+        document.getElementById("camera-mode-display").innerText = cameraMode;
+        console.log(`Camera mode toggled to: ${cameraMode}`);
+        socket.emit("camera_mode", { cameraMode: cameraMode }); // Emit camera mode
+      }
 
-            if (window.innerWidth > window.innerHeight) {
-                warning.style.opacity = '0';
-                setTimeout(() => (warning.style.display = 'none'), 500);
-                appContent.classList.remove('blur-background');
-            } else {
-                warning.style.display = 'flex';
-                setTimeout(() => (warning.style.opacity = '1'), 0);
-                appContent.classList.add('blur-background');
-            }
-        }
-
-        function adjustLayout() {
-            const liveCam = document.querySelector('.live-cam');
-            const liveLocation = document.querySelector('.live-location');
-            const viewportHeight = window.innerHeight;
-
-            liveCam.style.height = `${viewportHeight * 0.6}px`;
-            liveLocation.style.height = `${viewportHeight * 0.4}px`;
-        }
-
-        
-        let gear = "D"; // Default gear
-
-        function toggleGear() {
-            gear = gear === "D" ? "R" : "D"; // Toggle between Drive and Reverse
-            document.getElementById('gear-display').innerText = gear;
-            console.log(`Gear toggled to: ${gear}`);
-            socket.emit('control_mode', {gear: gear });
-        }
-
-        let cameraMode = "rover"; // Default camera mode
-
-        function toggleCameraMode() {
-            cameraMode = cameraMode === "rover" ? "drone" : "rover"; // Toggle between Drone and Rover
-            document.getElementById('camera-mode-display').innerText = cameraMode;
-            console.log(`Camera mode toggled to: ${cameraMode}`);
-            socket.emit('camera_mode', { cameraMode: cameraMode }); // Emit camera mode
-        }
-    
-
-        window.addEventListener('load', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
-        window.addEventListener('load', adjustLayout);
-        window.addEventListener('resize', adjustLayout);
+      window.addEventListener("load", handleOrientationChange);
+      window.addEventListener("resize", handleOrientationChange);
+      window.addEventListener("load", adjustLayout);
+      window.addEventListener("resize", adjustLayout);
     </script>
-</body>
+  </body>
 </html>

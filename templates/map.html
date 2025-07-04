@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Phone Location</title>
+  </head>
+  <body>
+    <h1>Live Phone Location</h1>
+    <p id="location">Waiting for location...</p>
+    <iframe
+      id="map"
+      width="600"
+      height="450"
+      style="border: 0"
+      allowfullscreen=""
+      loading="lazy"
+    ></iframe>
+
+    <script>
+      let prevLat = null;
+      let prevLon = null;
+
+      function sendLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.watchPosition(
+            function (position) {
+              let lat = position.coords.latitude;
+              let lon = position.coords.longitude;
+
+              // Only update if location changes
+              if (lat !== prevLat || lon !== prevLon) {
+                prevLat = lat;
+                prevLon = lon;
+
+                document.getElementById(
+                  "location"
+                ).innerText = `Latitude: ${lat}, Longitude: ${lon}`;
+                document.getElementById(
+                  "map"
+                ).src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+
+                fetch("/update_location", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ latitude: lat, longitude: lon }),
+                });
+              }
+            },
+            function (error) {
+              console.error("Location access denied:", error);
+              document.getElementById("location").innerText =
+                "Unable to fetch location.";
+            }
+          );
+        } else {
+          alert("Geolocation is not supported on this device.");
+        }
+      }
+
+      sendLocation();
+    </script>
+  </body>
+</html>
